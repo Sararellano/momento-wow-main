@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Momento Wow</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Montserrat & Pacifico -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    :root {
+      --background: oklch(0.99 0.005 90);
+      --foreground: oklch(0.2 0.02 280);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.2 0.02 280);
+      --primary: oklch(0.65 0.2 300);
+      --primary-foreground: oklch(1 0 0);
+      --secondary: oklch(0.85 0.12 165);
+      --secondary-foreground: oklch(0.2 0.02 165);
+      --muted: oklch(0.96 0.005 90);
+      --muted-foreground: oklch(0.5 0.01 280);
+      --border: oklch(0.92 0.01 90);
+      --input: oklch(0.95 0.005 90);
+      --lilac: oklch(0.65 0.2 300);
+      --lilac-light: oklch(0.9 0.1 300);
+      --mint: oklch(0.85 0.12 165);
+      --mint-light: oklch(0.95 0.06 165);
+      --cream: oklch(0.99 0.005 90);
+      --radius: 1.5rem;
+    }
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: 'Montserrat', system-ui, sans-serif;
+    }
+    .font-serif {
+      font-family: 'Pacifico', cursive;
+    }
+    .bg-background { background: var(--background); }
+    .bg-card { background: var(--card); overflow: hidden; }
+    .bg-primary { background: var(--primary); }
+    .bg-primary-foreground { background: var(--primary-foreground); }
+    .bg-secondary { background: var(--secondary); }
+    .bg-muted { background: var(--muted); }
+    .bg-lilac-light { background: var(--lilac-light); }
+    .bg-mint { background: var(--mint); }
+    .bg-mint-light { background: var(--mint-light); }
+    .bg-cream { background: var(--cream); }
+    .text-foreground { color: var(--foreground); }
+    .text-primary { color: var(--primary); }
+    .text-primary-foreground { color: var(--primary-foreground); }
+    .text-secondary { color: var(--secondary); }
+    .text-muted-foreground { color: var(--muted-foreground); }
+    .text-mint-foreground { color: var(--mint); }
+    .border-border { border-color: var(--border); }
+    .rounded-3xl { border-radius: 2rem; }
+    .rounded-2xl { border-radius: 1.5rem; }
+    .rounded-xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+    .shadow-lg { box-shadow: 0 10px 25px 0 rgba(0,0,0,0.08); }
+    .shadow-xl { box-shadow: 0 20px 40px 0 rgba(0,0,0,0.10); }
+    .shadow-2xl { box-shadow: 0 25px 50px 0 rgba(0,0,0,0.12); }
+    .transition-all { transition: all 0.3s; }
+    .animate-confetti {
+      animation: confetti 3s ease-in-out infinite;
+    }
+    .animate-float {
+      animation: float 2s ease-in-out infinite;
+    }
+    .animate-bounce {
+      animation: bounce 2s infinite;
+    }
+    @keyframes confetti {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-10px) scale(1.1); opacity: 1; }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    ::selection {
+      background-color: var(--lilac-light);
+      color: var(--foreground);
+    }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+<!-- Header/Navbar -->
+<header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent">
+  <div class="container mx-auto max-w-6xl px-4">
+    <nav class="flex items-center justify-between h-20">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2 group">
+        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <!-- Sparkles Icon SVG -->
+          <svg class="w-5 h-5 text-primary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636"/></svg>
+        </div>
+        <span class="text-xl font-bold text-foreground">
+          Momento<span class="font-serif text-primary">Wow</span>
+        </span>
+      </a>
+      <!-- Desktop nav -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#portfolio" class="text-muted-foreground hover:text-foreground font-medium transition-colors duration-200 relative group">Portfolio<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span></a>
+        <a href="#precios" class="text-muted-foreground hover:text-foreground font-medium transition-colors duration-200 relative group">Precios<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span></a>
+        <a href="#tecnologia" class="text-muted-foreground hover:text-foreground font-medium transition-colors duration-200 relative group">Tecnología<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span></a>
+        <a href="#contacto" class="text-muted-foreground hover:text-foreground font-medium transition-colors duration-200 relative group">Contacto<span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span></a>
+        <button class="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300">Ver Demos</button>
+      </div>
+      <!-- Mobile menu button -->
+      <button id="mobile-menu-btn" class="md:hidden p-2 rounded-xl hover:bg-muted transition-colors" aria-label="Abrir menú">
+        <!-- Menu Icon SVG -->
+        <svg id="menu-icon" class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <!-- X Icon SVG (hidden by default) -->
+        <svg id="close-icon" class="w-6 h-6 text-foreground hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </nav>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden overflow-hidden transition-all duration-300 max-h-0">
+      <div class="flex flex-col gap-4">
+        <a href="#portfolio" class="text-foreground font-medium py-2 px-4 rounded-xl hover:bg-muted transition-colors">Portfolio</a>
+        <a href="#precios" class="text-foreground font-medium py-2 px-4 rounded-xl hover:bg-muted transition-colors">Precios</a>
+        <a href="#tecnologia" class="text-foreground font-medium py-2 px-4 rounded-xl hover:bg-muted transition-colors">Tecnología</a>
+        <a href="#contacto" class="text-foreground font-medium py-2 px-4 rounded-xl hover:bg-muted transition-colors">Contacto</a>
+        <button class="rounded-full mt-2 bg-primary hover:bg-primary/90 text-primary-foreground">Ver Demos</button>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- Hero Section -->
+<section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-20">
+  <!-- Background decorative elements -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div id="hero-bg1" class="absolute -top-40 -right-40 w-96 h-96 bg-lilac-light rounded-full blur-3xl opacity-40 transition-all duration-1000 delay-300"></div>
+    <div id="hero-bg2" class="absolute -bottom-40 -left-40 w-96 h-96 bg-mint-light rounded-full blur-3xl opacity-50 transition-all duration-1000 delay-500"></div>
+  </div>
+  <div class="container mx-auto max-w-6xl">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Content -->
+      <div id="hero-content" class="space-y-8 transition-all duration-700 opacity-0 translate-y-10">
+        <div class="space-y-6">
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground text-balance">
+            La invitación de papel termina en la basura. <span class="text-primary font-serif">Tu Momento Wow</span>, en el recuerdo de todos.
+          </h1>
+          <p class="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+            Diseñamos experiencias web interactivas para eventos que no se olvidan. Juegos, música y emoción en un solo link.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button id="hero-demo-btn" class="group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 py-6 text-lg font-semibold shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-105">
+            <span class="relative z-10 flex items-center gap-2">
+              <!-- Sparkles Icon SVG -->
+              <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636"/></svg>
+              Ver Demos en Vivo
+            </span>
+            <!-- Pulse effect -->
+            <span class="absolute inset-0 bg-primary-foreground/20 rounded-full animate-ping opacity-20"></span>
+          </button>
+        </div>
+      </div>
+      <!-- iPhone Mockup with Confetti Animation -->
+      <div class="relative flex justify-center lg:justify-end transition-all duration-1000 delay-300 opacity-0 translate-y-20" id="hero-phone-col">
+        <div class="relative" id="phone-mockup">
+          <!-- Phone frame -->
+          <div class="relative w-72 h-[580px] bg-foreground rounded-[3rem] p-3 shadow-2xl">
+            <!-- Phone screen -->
+            <div class="relative w-full h-full bg-cream rounded-[2.5rem] overflow-hidden">
+              <!-- Notch -->
+              <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-foreground rounded-b-3xl z-20"></div>
+              <!-- Screen content -->
+              <div class="relative w-full h-full flex flex-col items-center justify-center px-6">
+                <!-- Invitation preview -->
+                <div class="text-center space-y-4 relative z-10">
+                  <p class="text-muted-foreground text-sm uppercase tracking-widest">Estás invitado a</p>
+                  <h3 class="text-3xl font-serif text-primary">La Boda de</h3>
+                  <p class="text-2xl font-bold text-foreground">María & Carlos</p>
+                  <div class="w-16 h-0.5 bg-primary mx-auto"></div>
+                  <p class="text-muted-foreground">12 de Octubre, 2025</p>
+                </div>
+                <!-- Confetti animation container -->
+                <div id="confetti-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Decorative elements around phone -->
+          <div class="absolute -top-4 -right-4 w-16 h-16 bg-mint rounded-full opacity-60 animate-bounce"></div>
+          <div class="absolute -bottom-6 -left-6 w-12 h-12 bg-lilac-light rounded-full opacity-60 animate-bounce" style="animation-delay:0.5s"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Footer -->
+<footer class="bg-foreground text-background py-16 px-4">
+  <div class="container mx-auto max-w-6xl">
+    <div class="grid md:grid-cols-4 gap-12 mb-12">
+      <!-- Brand -->
+      <div class="md:col-span-2 space-y-4">
+        <a href="#" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <!-- Sparkles Icon SVG -->
+            <svg class="w-5 h-5 text-primary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636"/></svg>
+          </div>
+          <span class="text-xl font-bold">
+            Momento<span class="font-serif text-primary">Wow</span>
+          </span>
+        </a>
+        <p class="text-background/70 max-w-sm leading-relaxed">
+          Creamos invitaciones web interactivas que convierten la primera impresión de tu evento en un recuerdo inolvidable.
+        </p>
+        <!-- Social links -->
+        <div class="flex gap-4 pt-2">
+          <a href="#" class="w-10 h-10 rounded-full bg-background/10 hover:bg-primary flex items-center justify-center transition-all duration-300" aria-label="Instagram">
+            <!-- Instagram Icon SVG -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-full bg-background/10 hover:bg-primary flex items-center justify-center transition-all duration-300" aria-label="LinkedIn">
+            <!-- Linkedin Icon SVG -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><line x1="16" y1="8" x2="16" y2="16"/><line x1="8" y1="8" x2="8" y2="16"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+          </a>
+          <a href="mailto:hola@momentowow.es" class="w-10 h-10 rounded-full bg-background/10 hover:bg-primary flex items-center justify-center transition-all duration-300" aria-label="Email">
+            <!-- Mail Icon SVG -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>
+          </a>
+        </div>
+      </div>
+      <!-- Links -->
+      <div>
+        <h4 class="font-bold mb-4 text-background">Servicios</h4>
+        <ul class="space-y-3">
+          <li><a href="#portfolio" class="text-background/70 hover:text-primary transition-colors">Bodas</a></li>
+          <li><a href="#portfolio" class="text-background/70 hover:text-primary transition-colors">Cumpleaños</a></li>
+          <li><a href="#portfolio" class="text-background/70 hover:text-primary transition-colors">Eventos corporativos</a></li>
+          <li><a href="#precios" class="text-background/70 hover:text-primary transition-colors">Precios</a></li>
+        </ul>
+      </div>
+      <!-- Contact -->
+      <div>
+        <h4 class="font-bold mb-4 text-background">Contacto</h4>
+        <ul class="space-y-3">
+          <li class="text-background/70">hola@momentowow.es</li>
+          <li class="text-background/70">Madrid, España</li>
+          <li><a href="#contacto" class="text-primary hover:text-primary/80 font-medium transition-colors">Solicitar presupuesto →</a></li>
+        </ul>
+      </div>
+    </div>
+    <!-- Bottom bar -->
+    <div class="pt-8 border-t border-background/10 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-background/50 text-sm" id="footer-year">© 2026 Momento Wow. Todos los derechos reservados.</p>
+      <div class="flex gap-6 text-sm">
+        <a href="#" class="text-background/50 hover:text-background transition-colors">Política de Privacidad</a>
+        <a href="#" class="text-background/50 hover:text-background transition-colors">Términos de Uso</a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- Contact Section -->
+<section id="contacto" class="py-24 px-4 bg-gradient-to-b from-muted/30 to-background">
+  <div class="container mx-auto max-w-3xl">
+    <div id="contact-content" class="transition-all duration-700 opacity-0 translate-y-10">
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+          ¿Listo para crear tu <span class="font-serif text-primary">Momento Wow</span>?
+        </h2>
+        <p class="text-muted-foreground text-lg">
+          Cuéntanos sobre tu evento y te responderemos en menos de 24 horas.
+        </p>
+      </div>
+      <!-- Formulario de contacto -->
+      <form id="contact-form" class="space-y-8" method="POST" action="contact.php" autocomplete="off">
+        <!-- Event type selection -->
+        <div class="space-y-4">
+          <label class="text-lg font-semibold text-foreground">¿Qué evento estás planeando?</label>
+					<input type="hidden" name="event_type" id="event_type" />
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button type="button" class="event-type-btn group p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 border-border hover:border-primary/50 bg-card hover:bg-muted" data-type="boda">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted group-hover:bg-lilac-light">
+                <!-- Heart Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21C12 21 4 13.5 4 8.5C4 5.5 6.5 3 9.5 3C11.04 3 12.5 4 13 5.09C13.5 4 14.96 3 16.5 3C19.5 3 22 5.5 22 8.5C22 13.5 12 21 12 21Z"/></svg>
+              </div>
+              <span class="text-sm font-medium text-foreground">Boda</span>
+            </button>
+            <button type="button" class="event-type-btn group p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 border-border hover:border-primary/50 bg-card hover:bg-muted" data-type="cumpleanos">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted group-hover:bg-lilac-light">
+                <!-- Cake Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v2m0 0C7.03 4 2 7.03 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6c0-4.97-5.03-8-10-8z"/><path d="M7 16v2m10-2v2"/></svg>
+              </div>
+              <span class="text-sm font-medium text-foreground">Cumpleaños</span>
+            </button>
+            <button type="button" class="event-type-btn group p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 border-border hover:border-primary/50 bg-card hover:bg-muted" data-type="empresa">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted group-hover:bg-lilac-light">
+                <!-- Building2 Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4M8 3v4"/></svg>
+              </div>
+              <span class="text-sm font-medium text-foreground">Evento de Empresa</span>
+            </button>
+            <button type="button" class="event-type-btn group p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 border-border hover:border-primary/50 bg-card hover:bg-muted" data-type="otro">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-muted group-hover:bg-lilac-light">
+                <!-- PartyPopper Icon SVG -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 22l16-16M22 2l-7 7m-2 2l-7 7"/></svg>
+              </div>
+              <span class="text-sm font-medium text-foreground">Otro evento</span>
+            </button>
+          </div>
+        </div>
+        <!-- Contact fields -->
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label for="name">Tu nombre</label>
+            <input id="name" name="name" placeholder="María García" class="rounded-xl py-6 bg-card border-border focus:border-primary w-full" required />
+          </div>
+          <div class="space-y-2">
+            <label for="email">Tu email</label>
+            <input id="email" name="email" type="email" placeholder="maria@ejemplo.com" class="rounded-xl py-6 bg-card border-border focus:border-primary w-full" required />
+          </div>
+        </div>
+        <!-- Event date -->
+        <div class="space-y-2">
+          <label for="date">Fecha aproximada del evento</label>
+          <input id="date" name="date" type="date" class="rounded-xl py-6 bg-card border-border focus:border-primary w-full" />
+        </div>
+        <!-- Submit button -->
+        <button id="contact-submit" type="submit" class="w-full rounded-full py-6 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 disabled:opacity-50" disabled>
+          <span class="flex items-center gap-2">
+            <!-- Send Icon SVG -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Quiero mi Momento Wow
+          </span>
+        </button>
+      </form>
+      <!-- Success message (hidden by default) -->
+      <div id="contact-success" class="text-center py-12 space-y-6 hidden">
+        <div class="w-20 h-20 bg-mint rounded-full flex items-center justify-center mx-auto animate-bounce">
+          <!-- Heart Icon SVG -->
+          <svg class="w-10 h-10 text-mint-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21C12 21 4 13.5 4 8.5C4 5.5 6.5 3 9.5 3C11.04 3 12.5 4 13 5.09C13.5 4 14.96 3 16.5 3C19.5 3 22 5.5 22 8.5C22 13.5 12 21 12 21Z"/></svg>
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-2xl font-bold text-foreground">¡Mensaje recibido!</h3>
+          <p class="text-muted-foreground">Nos pondremos en contacto contigo muy pronto para crear algo increíble juntos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Tech Section -->
+<section id="tecnologia" class="py-24 px-4">
+  <div class="container mx-auto max-w-6xl">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <!-- Content -->
+      <div id="tech-content" class="space-y-8 transition-all duration-700 opacity-0 -translate-x-10">
+        <div class="space-y-4">
+          <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground text-balance">
+            No es una plantilla. <span class="font-serif text-primary">Es código con corazón.</span>
+          </h2>
+          <p class="text-lg text-muted-foreground leading-relaxed">
+            Mientras otros usan constructores de arrastrar y soltar, nosotros escribimos código personalizado línea a línea. Utilizamos animaciones GSAP cuidadosamente optimizadas para que tu invitación vuele en cualquier dispositivo, incluso con conexión 3G.
+          </p>
+          <p class="text-lg text-muted-foreground leading-relaxed">
+            Cada proyecto es único porque cada historia merece ser contada de forma diferente. Sin compromisos, sin limitaciones de plantilla.
+          </p>
+        </div>
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-6">
+          <div class="text-center">
+            <div class="text-4xl font-bold text-primary">&lt;2s</div>
+            <p class="text-sm text-muted-foreground mt-1">Tiempo de carga</p>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold text-primary">100%</div>
+            <p class="text-sm text-muted-foreground mt-1">Código propio</p>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold text-primary">60fps</div>
+            <p class="text-sm text-muted-foreground mt-1">Animaciones fluidas</p>
+          </div>
+        </div>
+      </div>
+      <!-- Features grid -->
+      <div id="tech-features" class="grid grid-cols-2 gap-4 transition-all duration-700 delay-300 opacity-0 translate-x-10">
+        <!-- Feature 1: Código artesanal -->
+        <div class="group p-6 rounded-3xl bg-card border border-border/50 hover:border-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div class="w-12 h-12 bg-lilac-light rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <!-- Code2 Icon SVG -->
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3 class="font-bold text-foreground mb-2">Código artesanal</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">Cada línea escrita a mano. Sin plantillas genéricas ni constructores.</p>
+        </div>
+        <!-- Feature 2: Velocidad extrema -->
+        <div class="group p-6 rounded-3xl bg-card border border-border/50 hover:border-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 mt-8">
+          <div class="w-12 h-12 bg-lilac-light rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <!-- Zap Icon SVG -->
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3 class="font-bold text-foreground mb-2">Velocidad extrema</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">Optimizado para cargar en menos de 2 segundos en cualquier red.</p>
+        </div>
+        <!-- Feature 3: Mobile-first -->
+        <div class="group p-6 rounded-3xl bg-card border border-border/50 hover:border-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 -mt-8">
+          <div class="w-12 h-12 bg-lilac-light rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <!-- Smartphone Icon SVG -->
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+          </div>
+          <h3 class="font-bold text-foreground mb-2">Mobile-first</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">Diseñado pensando en móviles porque ahí es donde se abrirá tu invitación.</p>
+        </div>
+        <!-- Feature 4: Animaciones únicas -->
+        <div class="group p-6 rounded-3xl bg-card border border-border/50 hover:border-primary/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+          <div class="w-12 h-12 bg-lilac-light rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+            <!-- Palette Icon SVG -->
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 22a10 10 0 1 1 10-10c0 5-4 5-4 5H8a4 4 0 0 0 0 8h4z"/></svg>
+          </div>
+          <h3 class="font-bold text-foreground mb-2">Animaciones únicas</h3>
+          <p class="text-sm text-muted-foreground leading-relaxed">Microinteracciones GSAP que hacen que cada detalle cobre vida.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Pricing Section -->
+<section id="precios" class="py-24 px-4 bg-muted/30">
+  <div class="container mx-auto max-w-6xl">
+    <div id="pricing-title" class="text-center mb-16 transition-all duration-700 opacity-0 translate-y-10">
+      <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+        Planes pensados para <span class="font-serif text-primary">cada momento</span>
+      </h2>
+      <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+        Sin sorpresas. Precios transparentes que incluyen diseño, desarrollo y soporte.
+      </p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8 items-start">
+      <!-- Plan 1: Esencial -->
+      <div class="pricing-card relative transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:0ms">
+        <div class="relative overflow-hidden rounded-3xl border border-border/50 bg-card hover:border-primary/20 transition-all duration-300 h-full">
+          <div class="bg-gradient-to-br from-muted to-card p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-foreground/10">
+                <!-- Zap Icon SVG -->
+                <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-foreground">Esencial</h3>
+                <p class="text-sm text-muted-foreground">Perfecto para eventos íntimos</p>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-sm text-muted-foreground">desde</span>
+              <span class="text-5xl font-bold text-foreground">149</span>
+              <span class="text-xl text-muted-foreground">€</span>
+            </div>
+          </div>
+          <div class="p-8">
+            <ul class="space-y-4 mb-8">
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Diseño web personalizado</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Información del evento</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Mapa interactivo</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Confirmación de asistencia</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Soporte por email</span></li>
+            </ul>
+            <button class="w-full rounded-full py-6 font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground">Empezar ahora</button>
+          </div>
+        </div>
+      </div>
+      <!-- Plan 2: Experiencia (Popular) -->
+      <div class="pricing-card relative transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:150ms">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+          <span class="bg-primary text-primary-foreground text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">Más popular</span>
+        </div>
+        <div class="relative overflow-hidden rounded-3xl border border-primary shadow-lg scale-105 bg-card transition-all duration-300 h-full">
+          <div class="bg-gradient-to-br from-lilac-light to-mint-light p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-primary/20">
+                <!-- Star Icon SVG -->
+                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-foreground">Experiencia</h3>
+                <p class="text-sm text-muted-foreground">El favorito de nuestros clientes</p>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-sm text-muted-foreground">desde</span>
+              <span class="text-5xl font-bold text-foreground">249</span>
+              <span class="text-xl text-muted-foreground">€</span>
+            </div>
+          </div>
+          <div class="p-8">
+            <ul class="space-y-4 mb-8">
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Todo lo del pack Esencial</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Animaciones GSAP personalizadas</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Música de fondo</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Galería de fotos</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Cuenta atrás animada</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Panel de gestión de invitados</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-primary/20"><svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Soporte prioritario</span></li>
+            </ul>
+            <button class="w-full rounded-full py-6 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">Empezar ahora</button>
+          </div>
+        </div>
+      </div>
+      <!-- Plan 3: Pack WOW -->
+      <div class="pricing-card relative transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:300ms">
+        <div class="relative overflow-hidden rounded-3xl border border-border/50 bg-card hover:border-primary/20 transition-all duration-300 h-full">
+          <div class="bg-gradient-to-br from-mint-light to-muted p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-foreground/10">
+                <!-- Sparkles Icon SVG -->
+                <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05L4.636 4.636"/></svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-foreground">Pack WOW</h3>
+                <p class="text-sm text-muted-foreground">La experiencia definitiva</p>
+              </div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-sm text-muted-foreground">desde</span>
+              <span class="text-5xl font-bold text-foreground">399</span>
+              <span class="text-xl text-muted-foreground">€</span>
+            </div>
+          </div>
+          <div class="p-8">
+            <ul class="space-y-4 mb-8">
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Todo lo del pack Experiencia</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Mini-juego interactivo</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Video de fondo</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Múltiples idiomas</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Integración con calendario</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Estadísticas avanzadas</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Soporte 24/7</span></li>
+              <li class="flex items-start gap-3"><div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-secondary/50"><svg class="w-3 h-3 text-secondary-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><span class="text-foreground text-sm">Dominio personalizado</span></li>
+            </ul>
+            <button class="w-full rounded-full py-6 font-semibold transition-all duration-300 hover:bg-primary hover:text-primary-foreground">Empezar ahora</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Portfolio Section -->
+<section id="portfolio" class="py-24 px-4">
+  <div class="container mx-auto max-w-6xl">
+    <div id="portfolio-title" class="text-center mb-16 transition-all duration-700 opacity-0 translate-y-10">
+      <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+        Elige tu nivel de <span class="font-serif text-primary">impacto</span>
+      </h2>
+      <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+        Cada evento es único. Descubre qué estilo se adapta mejor a tu celebración.
+      </p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Card 1: Boda Real -->
+      <div class="portfolio-card group cursor-pointer transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:0ms">
+        <div class="relative overflow-hidden rounded-3xl border border-border/50 transition-all duration-500 h-full">
+          <!-- Gradient header -->
+          <div class="h-48 bg-gradient-to-br from-pink-100 to-lilac-light flex items-center justify-center relative overflow-hidden">
+            <!-- Heart Icon SVG -->
+            <svg class="w-20 h-20 text-foreground/80 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21C12 21 4 13.5 4 8.5C4 5.5 6.5 3 9.5 3C11.04 3 12.5 4 13 5.09C13.5 4 14.96 3 16.5 3C19.5 3 22 5.5 22 8.5C22 13.5 12 21 12 21Z"/></svg>
+            <!-- Floating elements on hover -->
+            <div class="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+              <div class="absolute w-3 h-3 bg-pink-500 rounded-full animate-float" style="left:20%;top:30%;animation-delay:0s"></div>
+              <div class="absolute w-3 h-3 bg-pink-500 rounded-full animate-float" style="left:35%;top:50%;animation-delay:0.2s"></div>
+              <div class="absolute w-3 h-3 bg-pink-500 rounded-full animate-float" style="left:50%;top:70%;animation-delay:0.4s"></div>
+              <div class="absolute w-3 h-3 bg-pink-500 rounded-full animate-float" style="left:65%;top:50%;animation-delay:0.6s"></div>
+              <div class="absolute w-3 h-3 bg-pink-500 rounded-full animate-float" style="left:80%;top:30%;animation-delay:0.8s"></div>
+              <div class="absolute w-3 h-3 bg-pink-500 rounded-full animate-float" style="left:60%;top:40%;animation-delay:1s"></div>
+            </div>
+          </div>
+          <!-- Content -->
+          <div class="p-6 bg-card">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xl font-bold text-foreground">Boda Real</h3>
+              <!-- ExternalLink Icon SVG -->
+              <svg class="w-5 h-5 text-muted-foreground transition-all duration-300 -translate-x-2 opacity-0 group-hover:text-primary group-hover:translate-x-0 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13V19A2 2 0 0 1 16 21H6A2 2 0 0 1 4 19V9A2 2 0 0 1 6 7H12"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </div>
+            <p class="text-primary font-medium mb-3">Elegancia y Storytelling</p>
+            <p class="text-muted-foreground text-sm leading-relaxed">Animaciones suaves, música romántica y una experiencia visual que captura la esencia de tu historia de amor.</p>
+          </div>
+          <!-- Bottom accent line -->
+          <div class="h-1 bg-pink-500 transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+        </div>
+      </div>
+      <!-- Card 2: Cumpleaños Gamer -->
+      <div class="portfolio-card group cursor-pointer transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:150ms">
+        <div class="relative overflow-hidden rounded-3xl border border-border/50 transition-all duration-500 h-full">
+          <!-- Gradient header -->
+          <div class="h-48 bg-gradient-to-br from-mint-light to-cyan-100 flex items-center justify-center relative overflow-hidden">
+            <!-- Gamepad2 Icon SVG -->
+            <svg class="w-20 h-20 text-foreground/80 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="6"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
+            <!-- Floating elements on hover -->
+            <div class="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+              <div class="absolute w-3 h-3 bg-secondary rounded-full animate-float" style="left:20%;top:30%;animation-delay:0s"></div>
+              <div class="absolute w-3 h-3 bg-secondary rounded-full animate-float" style="left:35%;top:50%;animation-delay:0.2s"></div>
+              <div class="absolute w-3 h-3 bg-secondary rounded-full animate-float" style="left:50%;top:70%;animation-delay:0.4s"></div>
+              <div class="absolute w-3 h-3 bg-secondary rounded-full animate-float" style="left:65%;top:50%;animation-delay:0.6s"></div>
+              <div class="absolute w-3 h-3 bg-secondary rounded-full animate-float" style="left:80%;top:30%;animation-delay:0.8s"></div>
+              <div class="absolute w-3 h-3 bg-secondary rounded-full animate-float" style="left:60%;top:40%;animation-delay:1s"></div>
+            </div>
+          </div>
+          <!-- Content -->
+          <div class="p-6 bg-card">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xl font-bold text-foreground">Cumpleaños Gamer</h3>
+              <!-- ExternalLink Icon SVG -->
+              <svg class="w-5 h-5 text-muted-foreground transition-all duration-300 -translate-x-2 opacity-0 group-hover:text-primary group-hover:translate-x-0 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13V19A2 2 0 0 1 16 21H6A2 2 0 0 1 4 19V9A2 2 0 0 1 6 7H12"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </div>
+            <p class="text-primary font-medium mb-3">Con mini-juego interactivo</p>
+            <p class="text-muted-foreground text-sm leading-relaxed">Sorprende a tus invitados con un mini-juego temático. La diversión empieza antes de la fiesta.</p>
+          </div>
+          <!-- Bottom accent line -->
+          <div class="h-1 bg-secondary transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+        </div>
+      </div>
+      <!-- Card 3: Baby Shower -->
+      <div class="portfolio-card group cursor-pointer transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:300ms">
+        <div class="relative overflow-hidden rounded-3xl border border-border/50 transition-all duration-500 h-full">
+          <!-- Gradient header -->
+          <div class="h-48 bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center relative overflow-hidden">
+            <!-- Baby Icon SVG -->
+            <svg class="w-20 h-20 text-foreground/80 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+            <!-- Floating elements on hover -->
+            <div class="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+              <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-float" style="left:20%;top:30%;animation-delay:0s"></div>
+              <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-float" style="left:35%;top:50%;animation-delay:0.2s"></div>
+              <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-float" style="left:50%;top:70%;animation-delay:0.4s"></div>
+              <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-float" style="left:65%;top:50%;animation-delay:0.6s"></div>
+              <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-float" style="left:80%;top:30%;animation-delay:0.8s"></div>
+              <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-float" style="left:60%;top:40%;animation-delay:1s"></div>
+            </div>
+          </div>
+          <!-- Content -->
+          <div class="p-6 bg-card">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xl font-bold text-foreground">Baby Shower</h3>
+              <!-- ExternalLink Icon SVG -->
+              <svg class="w-5 h-5 text-muted-foreground transition-all duration-300 -translate-x-2 opacity-0 group-hover:text-primary group-hover:translate-x-0 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13V19A2 2 0 0 1 16 21H6A2 2 0 0 1 4 19V9A2 2 0 0 1 6 7H12"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </div>
+            <p class="text-primary font-medium mb-3">Dulzura y cuenta atrás</p>
+            <p class="text-muted-foreground text-sm leading-relaxed">Colores tiernos, cuenta regresiva animada y todos los detalles para dar la bienvenida al bebé.</p>
+          </div>
+          <!-- Bottom accent line -->
+          <div class="h-1 bg-yellow-400 transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Problem Section -->
+<section id="problema" class="py-24 px-4 bg-muted/50">
+  <div class="container mx-auto max-w-6xl">
+    <div id="problem-title" class="text-center mb-16 transition-all duration-700 opacity-0 translate-y-10">
+      <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground text-balance">
+        ¿Por qué seguir enviando <span class="text-primary">PDFs aburridos</span>?
+      </h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="problem-card group transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:0ms">
+        <div class="relative bg-card rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-primary/20 h-full group-hover:-translate-y-2">
+          <!-- HeartCrack Icon SVG -->
+          <div class="w-16 h-16 bg-lilac-light rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16.5 3.5a5.5 5.5 0 0 0-7.8 7.8l3.3 3.3 1.5-2.5-2-2 2-2 2 2-2 2 1.5 2.5 3.3-3.3a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-foreground mb-3">Cero emoción</h3>
+          <p class="text-muted-foreground leading-relaxed">Un PDF no cuenta una historia.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/0 group-hover:bg-primary rounded-b-3xl transition-all duration-300"></div>
+        </div>
+      </div>
+      <div class="problem-card group transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:150ms">
+        <div class="relative bg-card rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-primary/20 h-full group-hover:-translate-y-2">
+          <!-- MapPinOff Icon SVG -->
+          <div class="w-16 h-16 bg-lilac-light rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21c-4.418 0-8-5.373-8-10a8 8 0 1 1 16 0c0 4.627-3.582 10-8 10zm0-8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-foreground mb-3">Información perdida</h3>
+          <p class="text-muted-foreground leading-relaxed">Los invitados olvidan el mapa o el horario.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/0 group-hover:bg-primary rounded-b-3xl transition-all duration-300"></div>
+        </div>
+      </div>
+      <div class="problem-card group transition-all duration-700 opacity-0 translate-y-10" style="transition-delay:300ms">
+        <div class="relative bg-card rounded-3xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-primary/20 h-full group-hover:-translate-y-2">
+          <!-- MessageSquareOff Icon SVG -->
+          <div class="w-16 h-16 bg-lilac-light rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-foreground mb-3">Confirmaciones caóticas</h3>
+          <p class="text-muted-foreground leading-relaxed">Gestiona tus invitados de forma inteligente, no por mensajes de audio.</p>
+          <div class="absolute bottom-0 left-0 right-0 h-1 bg-primary/0 group-hover:bg-primary rounded-b-3xl transition-all duration-300"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Aquí irán el resto de secciones: Hero, Problem, Portfolio, Pricing, Tech, Contact, Footer -->
+<!-- ... (se insertarán en los siguientes pasos) ... -->
+
+<!-- JavaScript for mobile menu and header scroll -->
+<script>
+// --- FOOTER YEAR LOGIC ---
+/**
+ * Set the current year in the footer automatically
+ */
+window.addEventListener('DOMContentLoaded', function() {
+  var year = new Date().getFullYear();
+  var yearEl = document.getElementById('footer-year');
+  if (yearEl) {
+    yearEl.innerHTML = `© ${year} Momento Wow. Todos los derechos reservados.`;
+  }
+});
+// --- CONTACT SECTION ANIMATION & FORM LOGIC ---
+
+/**
+ * Animate the Contact section when it enters the viewport
+ */
+function animateContactSection() {
+  const content = document.getElementById('contact-content');
+  let animated = false;
+  function onScroll() {
+    const section = document.getElementById('contacto');
+    const rect = section.getBoundingClientRect();
+    if (!animated && rect.top < window.innerHeight * 0.8) {
+      content.classList.remove('opacity-0', 'translate-y-10');
+      content.classList.add('opacity-100', 'translate-y-0');
+      animated = true;
+      window.removeEventListener('scroll', onScroll);
+    }
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+}
+window.addEventListener('DOMContentLoaded', animateContactSection);
+
+/**
+ * Contact form logic: event type selection, validation and success message
+ */
+window.addEventListener('DOMContentLoaded', function() {
+  const eventBtns = document.querySelectorAll('.event-type-btn');
+  let selectedType = null;
+  const submitBtn = document.getElementById('contact-submit');
+  const form = document.getElementById('contact-form');
+	const eventTypeInput = document.getElementById('event_type');
+  const successMsg = document.getElementById('contact-success');
+  // Handle event type selection
+  eventBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      eventBtns.forEach(b => b.classList.remove('border-primary', 'bg-lilac-light', 'shadow-lg'));
+      this.classList.add('border-primary', 'bg-lilac-light', 'shadow-lg');
+      selectedType = this.getAttribute('data-type');
+      eventTypeInput.value = selectedType;
+      validateForm();
+    });
+  });
+  // Enable submit only if event type is selected and required fields are filled
+  function validateForm() {
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    if (selectedType && name && email) {
+      submitBtn.disabled = false;
+    } else {
+      submitBtn.disabled = true;
+    }
+  }
+  form.name.addEventListener('input', validateForm);
+  form.email.addEventListener('input', validateForm);
+});
+// --- TECH SECTION ANIMATION LOGIC ---
+
+/**
+ * Animate the Tech section when it enters the viewport
+ */
+function animateTechSection() {
+  const content = document.getElementById('tech-content');
+  const features = document.getElementById('tech-features');
+  let animated = false;
+  function onScroll() {
+    const section = document.getElementById('tecnologia');
+    const rect = section.getBoundingClientRect();
+    if (!animated && rect.top < window.innerHeight * 0.8) {
+      content.classList.remove('opacity-0', '-translate-x-10');
+      content.classList.add('opacity-100', 'translate-x-0');
+      features.classList.remove('opacity-0', 'translate-x-10');
+      features.classList.add('opacity-100', 'translate-x-0');
+      animated = true;
+      window.removeEventListener('scroll', onScroll);
+    }
+  }
+  window.addEventListener('scroll', onScroll);
+  // Trigger on load in case already in view
+  onScroll();
+}
+// Run animation logic after DOM is loaded
+window.addEventListener('DOMContentLoaded', animateTechSection);
+// --- PRICING SECTION ANIMATION LOGIC ---
+
+/**
+ * Animate the Pricing section when it enters the viewport
+ */
+function animatePricingSection() {
+  const title = document.getElementById('pricing-title');
+  const cards = document.querySelectorAll('.pricing-card');
+  let animated = false;
+  function onScroll() {
+    const section = document.getElementById('precios');
+    const rect = section.getBoundingClientRect();
+    if (!animated && rect.top < window.innerHeight * 0.8) {
+      title.classList.remove('opacity-0', 'translate-y-10');
+      title.classList.add('opacity-100', 'translate-y-0');
+      cards.forEach(card => {
+        card.classList.remove('opacity-0', 'translate-y-10');
+        card.classList.add('opacity-100', 'translate-y-0');
+      });
+      animated = true;
+      window.removeEventListener('scroll', onScroll);
+    }
+  }
+  window.addEventListener('scroll', onScroll);
+  // Trigger on load in case already in view
+  onScroll();
+}
+// Run animation logic after DOM is loaded
+window.addEventListener('DOMContentLoaded', animatePricingSection);
+// --- PORTFOLIO SECTION ANIMATION LOGIC ---
+
+/**
+ * Animate the Portfolio section when it enters the viewport
+ */
+function animatePortfolioSection() {
+  const title = document.getElementById('portfolio-title');
+  const cards = document.querySelectorAll('.portfolio-card');
+  let animated = false;
+  function onScroll() {
+    const section = document.getElementById('portfolio');
+    const rect = section.getBoundingClientRect();
+    if (!animated && rect.top < window.innerHeight * 0.8) {
+      title.classList.remove('opacity-0', 'translate-y-10');
+      title.classList.add('opacity-100', 'translate-y-0');
+      cards.forEach(card => {
+        card.classList.remove('opacity-0', 'translate-y-10');
+        card.classList.add('opacity-100', 'translate-y-0');
+      });
+      animated = true;
+      window.removeEventListener('scroll', onScroll);
+    }
+  }
+  window.addEventListener('scroll', onScroll);
+  // Trigger on load in case already in view
+  onScroll();
+}
+// Run animation logic after DOM is loaded
+window.addEventListener('DOMContentLoaded', animatePortfolioSection);
+// --- PROBLEM SECTION ANIMATION LOGIC ---
+
+/**
+ * Animate the Problem section when it enters the viewport
+ */
+function animateProblemSection() {
+  const title = document.getElementById('problem-title');
+  const cards = document.querySelectorAll('.problem-card');
+  let animated = false;
+  function onScroll() {
+    const section = document.getElementById('problema');
+    const rect = section.getBoundingClientRect();
+    if (!animated && rect.top < window.innerHeight * 0.8) {
+      title.classList.remove('opacity-0', 'translate-y-10');
+      title.classList.add('opacity-100', 'translate-y-0');
+      cards.forEach(card => {
+        card.classList.remove('opacity-0', 'translate-y-10');
+        card.classList.add('opacity-100', 'translate-y-0');
+      });
+      animated = true;
+      window.removeEventListener('scroll', onScroll);
+    }
+  }
+  window.addEventListener('scroll', onScroll);
+  // Trigger on load in case already in view
+  onScroll();
+}
+// Run animation logic after DOM is loaded
+window.addEventListener('DOMContentLoaded', animateProblemSection);
+// --- HERO SECTION ANIMATION LOGIC ---
+
+/**
+ * Animate hero section on page load (fade in content and phone)
+ */
+window.addEventListener('DOMContentLoaded', function() {
+  // Fade in hero content
+  document.getElementById('hero-content').classList.remove('opacity-0', 'translate-y-10');
+  document.getElementById('hero-content').classList.add('opacity-100', 'translate-y-0');
+  // Fade in phone mockup
+  document.getElementById('hero-phone-col').classList.remove('opacity-0', 'translate-y-20');
+  document.getElementById('hero-phone-col').classList.add('opacity-100', 'translate-y-0');
+  // Animate background blobs
+  document.getElementById('hero-bg1').classList.add('translate-x-0', 'opacity-40');
+  document.getElementById('hero-bg2').classList.add('translate-y-0', 'opacity-50');
+  // Generate confetti
+  createConfetti();
+});
+
+/**
+ * Generate animated confetti pieces inside the phone mockup
+ */
+function createConfetti() {
+  const confettiContainer = document.getElementById('confetti-container');
+  confettiContainer.innerHTML = '';
+  const colors = [
+    'bg-primary',
+    'bg-secondary',
+    'bg-pink-400',
+    'bg-yellow-400',
+    'bg-blue-400'
+  ];
+  for (let i = 0; i < 30; i++) {
+    const piece = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const x = Math.random() * 100;
+    const delay = Math.random() * 2;
+    const size = Math.random() * 8 + 4;
+    piece.className = `absolute rounded-full animate-confetti ${color}`;
+    piece.style.left = `${x}%`;
+    piece.style.width = `${size}px`;
+    piece.style.height = `${size}px`;
+    piece.style.animationDelay = `${delay}s`;
+    piece.style.animationDuration = `${2 + Math.random() * 2}s`;
+    confettiContainer.appendChild(piece);
+  }
+}
+// Toggle mobile menu and icons
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+const menuIcon = document.getElementById('menu-icon');
+const closeIcon = document.getElementById('close-icon');
+let mobileMenuOpen = false;
+
+/**
+ * Toggle the mobile navigation menu and switch icons
+ */
+function toggleMobileMenu() {
+  mobileMenuOpen = !mobileMenuOpen;
+  if (mobileMenuOpen) {
+    mobileMenu.style.maxHeight = '400px';
+    menuIcon.classList.add('hidden');
+    closeIcon.classList.remove('hidden');
+    mobileMenuBtn.setAttribute('aria-label', 'Cerrar menú');
+  } else {
+    mobileMenu.style.maxHeight = '0';
+    menuIcon.classList.remove('hidden');
+    closeIcon.classList.add('hidden');
+    mobileMenuBtn.setAttribute('aria-label', 'Abrir menú');
+  }
+}
+mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+
+// Close mobile menu when a link is clicked
+mobileMenu.querySelectorAll('a,button').forEach(el => {
+  el.addEventListener('click', () => {
+    if (mobileMenuOpen) toggleMobileMenu();
+  });
+});
+
+/**
+ * Add a background and shadow to the header when scrolling
+ */
+window.addEventListener('scroll', function() {
+  const header = document.getElementById('main-header');
+  if (window.scrollY > 20) {
+    header.classList.add('bg-background/80', 'backdrop-blur-lg', 'shadow-sm', 'border-b', 'border-border/50');
+  } else {
+    header.classList.remove('bg-background/80', 'backdrop-blur-lg', 'shadow-sm', 'border-b', 'border-border/50');
+  }
+});
+</script>
+</body>
+</html>

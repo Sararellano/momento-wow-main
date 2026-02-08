@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atrapa los regalos - Juego Phaser</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom, #a7f3d0, #60a5fa 80%);
+      font-family: 'Inter', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #game-container {
+      margin-top: 32px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      background: #a7f3d0;
+    }
+    .info {
+      margin-top: 24px;
+      color: #0369a1;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .volver {
+      margin-top: 32px;
+      background: #ef4444;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 999px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.2s;
+      display: inline-block;
+    }
+    .volver:hover {
+      background: #b91c1c;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+</head>
+<body>
+  <h1 style="margin-top:32px;color:#0e7490;text-shadow:1px 2px 8px #fff;">Atrapa los regalos</h1>
+  <div id="game-container"></div>
+  <div class="info">¡Usa las flechas izquierda y derecha para mover el personaje y atrapar los regalos que caen!</div>
+  <a class="volver" href="/demo/cumpleanos-infantil">← Volver</a>
+  <script>
+    class MainScene extends Phaser.Scene {
+      constructor() {
+        super('MainScene');
+        this.score = 0;
+      }
+      preload() {
+        this.load.image('player', 'https://cdn.jsdelivr.net/gh/photonstorm/phaser3-examples/public/assets/sprites/phaser-dude.png');
+        this.load.image('gift', 'https://cdn.jsdelivr.net/gh/photonstorm/phaser3-examples/public/assets/sprites/gift.png');
+      }
+      create() {
+        this.score = 0;
+        this.player = this.physics.add.sprite(200, 360, 'player').setScale(1.2);
+        this.player.setCollideWorldBounds(true);
+        this.gifts = this.physics.add.group();
+        this.time.addEvent({ delay: 1000, callback: this.spawnGift, callbackScope: this, loop: true });
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.scoreText = this.add.text(16, 16, 'Regalos atrapados: 0', { fontSize: '24px', color: '#fff', fontFamily: 'inherit' });
+        this.physics.add.overlap(this.player, this.gifts, this.catchGift, undefined, this);
+      }
+      spawnGift() {
+        const x = Phaser.Math.Between(40, 360);
+        const gift = this.gifts.create(x, 0, 'gift');
+        gift.setVelocityY(Phaser.Math.Between(120, 180));
+        gift.setScale(0.7);
+      }
+      catchGift(player, gift) {
+        gift.destroy();
+        this.score++;
+        this.scoreText.setText(`Regalos atrapados: ${this.score}`);
+      }
+      update() {
+        if (this.cursors.left.isDown) {
+          this.player.setVelocityX(-220);
+        } else if (this.cursors.right.isDown) {
+          this.player.setVelocityX(220);
+        } else {
+          this.player.setVelocityX(0);
+        }
+      }
+    }
+    const config = {
+      type: Phaser.AUTO,
+      width: 400,
+      height: 480,
+      backgroundColor: '#a7f3d0',
+      physics: {
+        default: 'arcade',
+        arcade: {
+          gravity: { y: 0 },
+          debug: false,
+        },
+      },
+      scene: MainScene,
+      parent: 'game-container',
+    };
+    new Phaser.Game(config);
+  </script>
+</body>
+</html>
