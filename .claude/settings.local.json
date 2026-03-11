@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /Users/sararellano/Downloads/momento-wow-website/next.config.*)"
+    ]
+  }
+}
