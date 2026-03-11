@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata, Viewport } from 'next'
 import { Montserrat, Pacifico } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from 'sonner'
 import './globals.css'
 
@@ -57,6 +58,7 @@ export default function RootLayout({
         {children}
         <Toaster position="top-center" richColors />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
