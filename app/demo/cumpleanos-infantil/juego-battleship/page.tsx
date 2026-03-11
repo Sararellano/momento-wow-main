@@ -556,7 +556,7 @@ export default function BattleshipGame() {
     return (
       <motion.button
         key={`${row}-${col}`}
-        className={`aspect-square rounded-sm md:rounded border border-blue-200/50 flex items-center justify-center transition-all ${bgClass} ${
+        className={`aspect-square w-full h-full rounded-sm md:rounded border border-blue-200/50 flex items-center justify-center transition-all ${bgClass} ${
           onClick && !isPreview ? "hover:bg-blue-200 cursor-crosshair" : ""
         } ${isEnemy && gamePhase === "playing" && isPlayerTurn ? "hover:ring-2 hover:ring-primary" : ""}`}
         onClick={onClick}
@@ -777,7 +777,7 @@ export default function BattleshipGame() {
                 </span>
               </h2>
               <div
-                className="grid gap-1 md:gap-1.5 mx-auto"
+                className="grid gap-1 md:gap-1.5 mx-auto w-full"
                 style={{
                   gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
                   maxWidth: "400px",
@@ -829,7 +829,7 @@ export default function BattleshipGame() {
                 </span>
               </h2>
               <div
-                className="grid gap-1 md:gap-1.5 mx-auto"
+                className="grid gap-1 md:gap-1.5 mx-auto w-full"
                 style={{
                   gridTemplateColumns: `repeat(${BOARD_SIZE}, minmax(0, 1fr))`,
                   maxWidth: "350px",
