@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata, Viewport } from 'next'
 import { Montserrat, Pacifico } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const montserrat = Montserrat({ 
@@ -54,6 +55,7 @@ export default function RootLayout({
     <html lang="es" className={`${montserrat.variable} ${pacifico.variable}`}>
       <body className="font-sans antialiased">
         {children}
+        <Toaster position="top-center" richColors />
         <Analytics />
       </body>
     </html>

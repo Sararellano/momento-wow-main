@@ -1,14 +1,53 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 import { MapPin, Clock, Calendar, Gamepad2, ChevronDown } from "lucide-react";
+import { RSVPForm } from "@/components/rsvp/rsvp-form";
+import type { RSVPConfig } from "@/lib/rsvp/types";
+
+// RSVP configuration for the birthday demo
+const cumpleanosRSVPConfig: RSVPConfig = {
+  eventId: 'demo-cumple-capitan-lucas',
+  eventName: 'Cumpleaños del Capitán Lucas',
+  fields: [
+    { name: 'name', type: 'text', label: 'Nombre del tripulante', placeholder: 'Juan Pérez', required: true },
+    { name: 'guests', type: 'select', label: 'Número de asistentes', required: true, options: [
+      { value: '1', label: 'Solo yo' },
+      { value: '2', label: 'Yo + 1 niño/a' },
+      { value: '3', label: 'Yo + 2 niños/as' },
+    ]},
+    { name: 'attendance', type: 'radio', label: '¿Subirás al barco?', required: true, options: [
+      { value: 'yes', label: '¡Sí, zarpo con vosotros!' },
+      { value: 'no', label: 'No puedo asistir' },
+    ]},
+  ],
+  adapter: {
+    type: 'both',
+    googleScriptUrl: 'https://script.google.com/macros/s/AKfycbwC9KWNugCSqYoftsRvPdkIUKOLirdFupkgcD0MszMVgw7i-sJJkseS1yJ7lLBayf1fnw/exec',
+    supabaseUrl: 'https://clgtmhgrozfdxumptomb.supabase.co',
+    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZ3RtaGdyb3pmZHh1bXB0b21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjAsImV4cCI6MjA4ODgzMDAyMH0.NDkbhcx9kEJRb6YF10n-Nd6mR8qM2LpG95edHg2r8c0',
+    supabaseTable: 'rsvps',
+  },
+  theme: {
+    primaryColor: 'cyan-500',
+    accentColor: 'blue-500',
+    cardClass: 'shadow-xl',
+    buttonClass: 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white',
+    radioActiveClass: 'border-cyan-500 bg-cyan-500 text-white',
+    radioInactiveClass: 'border-border bg-background text-foreground hover:border-cyan-300',
+    successIconClass: 'bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg',
+  },
+  labels: {
+    submitButton: 'Confirmar asistencia',
+    successTitle: '¡Bienvenido a la tripulación!',
+    successMessage: '¡Nos vemos el 20 de Julio para la gran aventura pirata!',
+    declineTitle: '¡Gracias por avisar!',
+    declineMessage: '¡Esperamos verte en la próxima aventura!',
+  },
+}
 
 export default function CumpleanosInfantilDemo() {
   const [isVisible, setIsVisible] = useState(false);
-  const [formData, setFormData] = useState({ name: "", guests: "1", attending: true });
-  const [submitted, setSubmitted] = useState(false);
 
   // Character customization state
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
@@ -51,12 +90,6 @@ export default function CumpleanosInfantilDemo() {
     { id: "blue", name: "Azules", color: "#1e40af" },
     { id: "red", name: "Rojos", color: "#dc2626" },
   ];
-
-  // Handle RSVP form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
 
   // Get character display
   const renderCharacter = () => {
@@ -386,92 +419,7 @@ export default function CumpleanosInfantilDemo() {
             </p>
           </div>
 
-          {!submitted ? (
-            <form onSubmit={handleSubmit} className="space-y-6 p-8 rounded-3xl bg-card border-2 border-border shadow-xl">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-foreground">
-                  Nombre del tripulante
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Juan Pérez"
-                  className="rounded-xl py-6"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="guests" className="text-sm font-medium text-foreground">
-                  Número de acompañantes
-                </label>
-                <select
-                  id="guests"
-                  name="guests"
-                  className="w-full rounded-xl py-3 px-4 border-2 border-border bg-background"
-                  value={formData.guests}
-                  onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
-                >
-                  <option value="1">Solo yo</option>
-                  <option value="2">Yo + 1 niño/a</option>
-                  <option value="3">Yo + 2 niños/as</option>
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground">¿Subirás al barco?</p>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, attending: true })}
-                    className={`flex-1 py-3 px-6 rounded-xl border-2 transition-all ${
-                      formData.attending
-                        ? "border-cyan-500 bg-cyan-500 text-white"
-                        : "border-border bg-background text-foreground hover:border-cyan-300"
-                    }`}
-                  >
-                    ¡Sí, zarpo con vosotros!
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, attending: false })}
-                    className={`flex-1 py-3 px-6 rounded-xl border-2 transition-all ${
-                      !formData.attending
-                        ? "border-cyan-500 bg-cyan-500 text-white"
-                        : "border-border bg-background text-foreground hover:border-cyan-300"
-                    }`}
-                  >
-                    No puedo asistir
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full rounded-full py-6 text-lg font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg transition-all duration-300"
-              >
-                Confirmar asistencia
-              </Button>
-            </form>
-          ) : (
-            <div className="text-center py-12 space-y-6 p-8 rounded-3xl bg-card border-2 border-border shadow-xl">
-              <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center mx-auto animate-bounce shadow-lg">
-                <span className="text-4xl">⚓</span>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">
-                  {formData.attending ? "¡Bienvenido a la tripulación!" : "¡Gracias por avisar!"}
-                </h3>
-                <p className="text-muted-foreground">
-                  {formData.attending
-                    ? "¡Nos vemos el 20 de Julio para la gran aventura pirata!"
-                    : "¡Esperamos verte en la próxima aventura!"}
-                </p>
-              </div>
-            </div>
-          )}
+          <RSVPForm config={cumpleanosRSVPConfig} />
         </div>
       </section>
 

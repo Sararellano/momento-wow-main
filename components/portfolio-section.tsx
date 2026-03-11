@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Heart, Gamepad2, Baby, ExternalLink } from "lucide-react";
+import { Heart, Gamepad2, Baby, Building2, ExternalLink } from "lucide-react";
 
 const portfolioItems = [
   {
@@ -12,7 +12,7 @@ const portfolioItems = [
       "Animaciones suaves, música romántica y una experiencia visual que captura la esencia de tu historia de amor.",
     gradient: "from-pink-100 to-lilac-light",
     accent: "bg-pink-500",
-    hoverBg: "group-hover:bg-pink-50",
+    link: "/demo/boda",
   },
   {
     icon: Gamepad2,
@@ -22,7 +22,7 @@ const portfolioItems = [
       "Sorprende a tus invitados con un mini-juego temático. La diversión empieza antes de la fiesta.",
     gradient: "from-mint-light to-cyan-100",
     accent: "bg-secondary",
-    hoverBg: "group-hover:bg-mint-light",
+    link: "/demo/cumpleanos-infantil",
   },
   {
     icon: Baby,
@@ -32,7 +32,17 @@ const portfolioItems = [
       "Colores tiernos, cuenta regresiva animada y todos los detalles para dar la bienvenida al bebé.",
     gradient: "from-yellow-100 to-orange-100",
     accent: "bg-yellow-400",
-    hoverBg: "group-hover:bg-yellow-50",
+    link: "/demo/baby-shower",
+  },
+  {
+    icon: Building2,
+    title: "Evento Corporativo",
+    subtitle: "Profesional e interactivo",
+    description:
+      "Agenda dinámica, trivia de marca, mapa interactivo y RSVP con catering. La imagen de tu empresa empieza aquí.",
+    gradient: "from-indigo-100 to-purple-100",
+    accent: "bg-indigo-500",
+    link: "/demo/evento-corporativo",
   },
 ];
 
@@ -76,13 +86,12 @@ export function PortfolioSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {portfolioItems.map((item, index) => {
-            const demoLinks = ["/demo/boda", "/demo/cumpleanos-infantil", "/demo/baby-shower"];
             return (
               <a
                 key={item.title}
-                href={demoLinks[index]}
+                href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`group cursor-pointer transition-all duration-700 block ${

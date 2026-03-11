@@ -6,10 +6,8 @@ import { useState, useEffect, useRef } from "react"
 import { Heart, Gift, Calendar, MapPin, Clock, Music, Star, Baby, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { RSVPForm } from "@/components/rsvp/rsvp-form"
+import type { RSVPConfig } from "@/lib/rsvp/types"
 
 // Event date - set to 45 days from now for demo
 const EVENT_DATE = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
@@ -108,71 +106,44 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
   )
 }
 
-function RSVPForm() {
-  const [submitted, setSubmitted] = useState(false)
-  const [attendance, setAttendance] = useState("yes")
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitted(true)
-  }
-
-  if (submitted) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-mint-100 flex items-center justify-center">
-          <Heart className="w-10 h-10 text-pink-400 animate-pulse" />
-        </div>
-        <h3 className="text-2xl font-serif text-pink-400 mb-2">Gracias por confirmar</h3>
-        <p className="text-pink-300">Te esperamos con mucha ilusión</p>
-      </div>
-    )
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="name" className="text-pink-400">Tu nombre</Label>
-        <Input
-          id="name"
-          placeholder="¿Cómo te llamas?"
-          className="rounded-2xl border-pink-100 focus:border-pink-300 focus:ring-pink-200 bg-white/80"
-          required
-        />
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-pink-400">¿Podrás asistir?</Label>
-        <RadioGroup value={attendance} onValueChange={setAttendance} className="flex gap-4">
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="yes" id="yes" className="border-pink-300 text-pink-400" />
-            <Label htmlFor="yes" className="text-pink-300 cursor-pointer">Sí, allí estaré</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="no" id="no" className="border-pink-300 text-pink-400" />
-            <Label htmlFor="no" className="text-pink-300 cursor-pointer">No podré ir</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="message" className="text-pink-400">Mensaje para los papás (opcional)</Label>
-        <Textarea
-          id="message"
-          placeholder="Escribe tu mensaje de cariño..."
-          className="rounded-2xl border-pink-100 focus:border-pink-300 focus:ring-pink-200 bg-white/80 min-h-24 resize-none"
-        />
-      </div>
-
-      <Button
-        type="submit"
-        className="w-full rounded-2xl bg-gradient-to-r from-pink-400 to-pink-300 hover:from-pink-500 hover:to-pink-400 text-white shadow-lg shadow-pink-200/50 py-6"
-      >
-        <Heart className="w-4 h-4 mr-2" />
-        Confirmar asistencia
-      </Button>
-    </form>
-  )
+// RSVP configuration for the baby shower demo
+const babyShowerRSVPConfig: RSVPConfig = {
+  eventId: 'demo-baby-shower-sofia',
+  eventName: 'Baby Shower de Sofía',
+  fields: [
+    { name: 'name', type: 'text', label: 'Tu nombre', placeholder: '¿Cómo te llamas?', required: true },
+    { name: 'attendance', type: 'radio', label: '¿Podrás asistir?', required: true, options: [
+      { value: 'yes', label: 'Sí, allí estaré' },
+      { value: 'no', label: 'No podré ir' },
+    ]},
+    { name: 'message', type: 'textarea', label: 'Mensaje para los papás (opcional)', placeholder: 'Escribe tu mensaje de cariño...' },
+  ],
+  adapter: {
+    type: 'both',
+    googleScriptUrl: 'https://script.google.com/macros/s/AKfycbwC9KWNugCSqYoftsRvPdkIUKOLirdFupkgcD0MszMVgw7i-sJJkseS1yJ7lLBayf1fnw/exec',
+    supabaseUrl: 'https://clgtmhgrozfdxumptomb.supabase.co',
+    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZ3RtaGdyb3pmZHh1bXB0b21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjAsImV4cCI6MjA4ODgzMDAyMH0.NDkbhcx9kEJRb6YF10n-Nd6mR8qM2LpG95edHg2r8c0',
+    supabaseTable: 'rsvps',
+  },
+  theme: {
+    primaryColor: 'pink-400',
+    accentColor: 'mint',
+    labelClass: 'text-pink-400',
+    cardClass: 'bg-white/90 backdrop-blur-sm border-0 shadow-none',
+    buttonClass: 'bg-gradient-to-r from-pink-400 to-pink-300 hover:from-pink-500 hover:to-pink-400 text-white shadow-lg shadow-pink-200/50 rounded-2xl',
+    radioActiveClass: 'border-pink-400 bg-pink-400 text-white',
+    radioInactiveClass: 'border-pink-100 bg-white/80 text-pink-300 hover:border-pink-300',
+    successIconClass: 'bg-mint-100',
+  },
+  labels: {
+    title: 'Confirma tu asistencia',
+    subtitle: 'Tu presencia hará este día más especial',
+    submitButton: 'Confirmar asistencia',
+    successTitle: 'Gracias por confirmar',
+    successMessage: 'Te esperamos con mucha ilusión',
+    declineTitle: 'Gracias por avisarnos',
+    declineMessage: 'Te echaremos de menos',
+  },
 }
 
 export default function BabyShowerDemo() {
@@ -393,7 +364,7 @@ export default function BabyShowerDemo() {
               <p className="text-pink-300 text-center mb-8">
                 Tu presencia hará este día más especial
               </p>
-              <RSVPForm />
+              <RSVPForm config={babyShowerRSVPConfig} />
             </div>
           </Card>
         </div>

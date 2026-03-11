@@ -1,15 +1,56 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Heart, MapPin, Clock, Calendar, Music, ChevronDown } from "lucide-react";
+import { RSVPForm } from "@/components/rsvp/rsvp-form";
+import type { RSVPConfig } from "@/lib/rsvp/types";
+
+// RSVP configuration for the wedding demo
+const bodaRSVPConfig: RSVPConfig = {
+  eventId: 'demo-boda-elena-mateo',
+  eventName: 'Boda de Elena & Mateo',
+  fields: [
+    { name: 'name', type: 'text', label: 'Tu nombre completo', placeholder: 'María García López', required: true },
+    { name: 'guests', type: 'select', label: 'Número de asistentes', required: true, options: [
+      { value: '1', label: 'Solo yo' },
+      { value: '2', label: 'Yo + 1 asistente' },
+      { value: '3', label: 'Yo + 2 asistentes' },
+      { value: '4', label: 'Yo + 3 asistentes' },
+    ]},
+    { name: 'attendance', type: 'radio', label: '¿Podrás asistir?', required: true, options: [
+      { value: 'yes', label: '¡Sí, asistiré!' },
+      { value: 'no', label: 'No podré asistir' },
+    ]},
+  ],
+  adapter: {
+    type: 'both',
+    googleScriptUrl: 'https://script.google.com/macros/s/AKfycbwC9KWNugCSqYoftsRvPdkIUKOLirdFupkgcD0MszMVgw7i-sJJkseS1yJ7lLBayf1fnw/exec',
+    supabaseUrl: 'https://clgtmhgrozfdxumptomb.supabase.co',
+    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZ3RtaGdyb3pmZHh1bXB0b21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjAsImV4cCI6MjA4ODgzMDAyMH0.NDkbhcx9kEJRb6YF10n-Nd6mR8qM2LpG95edHg2r8c0',
+    supabaseTable: 'rsvps',
+  },
+  theme: {
+    primaryColor: 'primary',
+    accentColor: 'mint',
+    buttonClass: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+    radioActiveClass: 'border-primary bg-primary text-primary-foreground',
+    radioInactiveClass: 'border-border bg-background text-foreground hover:border-primary/50',
+    successIconClass: 'bg-mint',
+  },
+  labels: {
+    title: 'Confirma tu Asistencia',
+    subtitle: 'Nos encantaría contar contigo en nuestro día especial',
+    submitButton: 'Enviar confirmación',
+    successTitle: '¡Gracias por confirmar!',
+    successMessage: 'Nos vemos el 15 de Junio. ¡No podemos esperar para celebrar juntos!',
+    declineTitle: 'Gracias por avisarnos',
+    declineMessage: 'Lamentamos que no puedas acompañarnos. ¡Te echaremos de menos!',
+  },
+}
 
 export default function BodaDemo() {
   const [isVisible, setIsVisible] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [formData, setFormData] = useState({ name: "", guests: "1", attending: true });
-  const [submitted, setSubmitted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -26,12 +67,6 @@ export default function BodaDemo() {
       }
       setIsPlaying(!isPlaying);
     }
-  };
-
-  // Handle RSVP form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
   };
 
   return (
@@ -277,93 +312,7 @@ export default function BodaDemo() {
             </p>
           </div>
 
-          {!submitted ? (
-            <form onSubmit={handleSubmit} className="space-y-6 p-8 rounded-3xl bg-card border-2 border-border">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-foreground">
-                  Tu nombre completo
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="María García López"
-                  className="rounded-xl py-6"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="guests" className="text-sm font-medium text-foreground">
-                  Número de acompañantes
-                </label>
-                <select
-                  id="guests"
-                  name="guests"
-                  className="w-full rounded-xl py-3 px-4 border-2 border-border bg-background"
-                  value={formData.guests}
-                  onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
-                >
-                  <option value="1">Solo yo</option>
-                  <option value="2">Yo + 1 acompañante</option>
-                  <option value="3">Yo + 2 acompañantes</option>
-                  <option value="4">Yo + 3 acompañantes</option>
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground">¿Podrás asistir?</p>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, attending: true })}
-                    className={`flex-1 py-3 px-6 rounded-xl border-2 transition-all ${
-                      formData.attending
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background text-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    ¡Sí, asistiré!
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, attending: false })}
-                    className={`flex-1 py-3 px-6 rounded-xl border-2 transition-all ${
-                      !formData.attending
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background text-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    No podré asistir
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full rounded-full py-6 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all duration-300"
-              >
-                Enviar confirmación
-              </Button>
-            </form>
-          ) : (
-            <div className="text-center py-12 space-y-6 p-8 rounded-3xl bg-card border-2 border-border">
-              <div className="w-20 h-20 bg-mint rounded-full flex items-center justify-center mx-auto animate-bounce">
-                <Heart className="w-10 h-10 text-mint-foreground fill-mint-foreground" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">
-                  {formData.attending ? "¡Gracias por confirmar!" : "Gracias por avisarnos"}
-                </h3>
-                <p className="text-muted-foreground">
-                  {formData.attending
-                    ? "Nos vemos el 15 de Junio. ¡No podemos esperar para celebrar juntos!"
-                    : "Lamentamos que no puedas acompañarnos. ¡Te echaremos de menos!"}
-                </p>
-              </div>
-            </div>
-          )}
+          <RSVPForm config={bodaRSVPConfig} />
         </div>
       </section>
 

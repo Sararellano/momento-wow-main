@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat /Users/sararellano/Downloads/momento-wow-website/next.config.*)"
+      "Bash(cat /Users/sararellano/Downloads/momento-wow-website/next.config.*)",
+      "Bash(grep -E \"\\\\.tsx$|^d\")",
+      "Bash(npx next:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
