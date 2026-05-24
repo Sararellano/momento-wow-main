@@ -5,8 +5,8 @@ import { Heart, Gamepad2, Baby, Building2, ExternalLink } from "lucide-react";
 
 const portfolioItems = [
   {
-    icon: Heart,
-    title: "Boda Real",
+		icon: Heart,
+    title: "Boda Real <br /><br />",
     subtitle: "Elegancia y Storytelling",
     description:
       "Animaciones suaves, música romántica y una experiencia visual que captura la esencia de tu historia de amor.",
@@ -26,7 +26,7 @@ const portfolioItems = [
   },
   {
     icon: Baby,
-    title: "Baby Shower",
+    title: "Baby Shower <br /><br />",
     subtitle: "Dulzura y cuenta atrás",
     description:
       "Colores tiernos, cuenta regresiva animada y todos los detalles para dar la bienvenida al bebé.",
@@ -143,9 +143,7 @@ export function PortfolioSection() {
                 {/* Content */}
                 <div className="p-6 bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-foreground">
-                      {item.title}
-                    </h3>
+                    <h3 className="text-xl font-bold text-foreground" dangerouslySetInnerHTML={{__html: item.title}} />
                     <ExternalLink
                       className={`w-5 h-5 text-muted-foreground transition-all duration-300 ${
                         hoveredCard === index

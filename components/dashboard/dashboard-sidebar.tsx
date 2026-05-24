@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, CalendarDays, LogOut, Sparkles } from 'lucide-react'
+import { LayoutDashboard, Users, CalendarDays, LogOut, Sparkles, BarChart2 } from 'lucide-react'
 import { useAuth } from './auth-provider'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -20,6 +20,7 @@ const navItems = [
   { href: '/dashboard', label: 'Panel General', icon: LayoutDashboard },
   { href: '/dashboard/rsvps', label: 'Confirmaciones', icon: Users },
   { href: '/dashboard/eventos', label: 'Eventos', icon: CalendarDays },
+  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
 ]
 
 export function DashboardSidebar() {

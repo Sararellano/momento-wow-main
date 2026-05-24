@@ -21,3 +21,14 @@ export interface UserRoleRow {
 }
 
 export type UserRole = 'admin' | 'client'
+
+export interface PageAnalyticsRow {
+  id: string
+  event_id: string
+  session_id: string
+  device_type: 'mobile' | 'tablet' | 'desktop'
+  time_spent_seconds: number
+  map_clicks: number
+  sections_viewed: string[]
+  created_at: string
+}

@@ -26,14 +26,18 @@ import {
   Home,
   CalendarPlus,
   Navigation,
+  Eye,
+  BarChart2,
+  TrendingUp,
 } from "lucide-react"
+import { AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts"
+import { ChartContainer } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { RSVPForm } from "@/components/rsvp/rsvp-form"
 import type { RSVPConfig } from "@/lib/rsvp/types"
 
-// Event date - 30 days from now
-const EVENT_DATE = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+const EVENT_DATE = new Date("2026-10-16T09:00:00+02:00")
 
 // Agenda items
 const AGENDA_ITEMS = [
@@ -124,6 +128,27 @@ const TRIVIA_QUESTIONS = [
   },
 ]
 
+// Speakers
+const SPEAKERS = [
+  { name: "Carlos Mendoza", role: "CEO & Founder",      company: "TechCorp",     initials: "CM", color: "#7C3AED", topic: "Keynote: Visión 2026" },
+  { name: "Ana García",     role: "Dir. de Producto",   company: "TechCorp",     initials: "AG", color: "#2EFFA9", topic: "Lanzamiento de Producto" },
+  { name: "Marcos Ruiz",    role: "CTO",                company: "InnovateTech", initials: "MR", color: "#f472b6", topic: "Panel Innovación Digital" },
+  { name: "Laura Vidal",    role: "Head of Growth",     company: "GrowthLab",    initials: "LV", color: "#fb923c", topic: "Workshop Growth Hacking" },
+  { name: "José Torres",    role: "COO",                company: "ScaleUp",      initials: "JT", color: "#38bdf8", topic: "Workshop Liderazgo" },
+]
+
+// Workshops
+const WORKSHOPS = [
+  { id: "w1", emoji: "🎯", title: "Liderazgo en la era digital", speaker: "José Torres",  seats: 25, left: 8  },
+  { id: "w2", emoji: "🤖", title: "IA aplicada al negocio",      speaker: "Marcos Ruiz", seats: 20, left: 12 },
+  { id: "w3", emoji: "📈", title: "Growth hacking en 2026",      speaker: "Laura Vidal", seats: 20, left: 5  },
+]
+
+// Sponsors
+const SPONSORS = [
+  "Accenture", "Salesforce", "Microsoft", "Santander", "BBVA", "Iberdrola",
+]
+
 // Animated counter hook
 function useAnimatedCounter(target: number, duration: number = 2000, start: boolean = true) {
   const [count, setCount] = useState(0)
@@ -181,6 +206,84 @@ function useCountdown(targetDate: Date) {
   }, [targetDate])
 
   return timeLeft
+}
+
+// Page analytics tracking hook — sends real behavioral data to Supabase page_analytics table
+const SUPA_URL = 'https://clgtmhgrozfdxumptomb.supabase.co'
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZ3RtaGdyb3pmZHh1bXB0b21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjAsImV4cCI6MjA4ODgzMDAyMH0.NDkbhcx9kEJRb6YF10n-Nd6mR8qM2LpG95edHg2r8c0'
+const TRACKED_SECTIONS = ['section-hero', 'section-agenda', 'section-trivia', 'section-mapa', 'section-rsvp']
+
+function usePageAnalytics(eventId: string) {
+  const sessionId = useRef('')
+  const startTime = useRef(0)
+  const sectionsViewed = useRef<Set<string>>(new Set())
+  const mapClicksRef = useRef(0)
+  const sent = useRef(false)
+
+  const trackMapClick = () => { mapClicksRef.current++ }
+
+  useEffect(() => {
+    // One session per browser tab — avoid duplicates on hot reload
+    const storageKey = `mw_analytics_${eventId}`
+    if (sessionStorage.getItem(storageKey)) { sent.current = true; return }
+    const id = crypto.randomUUID()
+    sessionId.current = id
+    startTime.current = Date.now()
+    sessionStorage.setItem(storageKey, id)
+
+    const getDevice = (): string => {
+      const w = window.innerWidth
+      if (w < 768) return 'mobile'
+      if (w < 1024) return 'tablet'
+      return 'desktop'
+    }
+
+    const send = () => {
+      if (sent.current) return
+      sent.current = true
+      fetch(`${SUPA_URL}/rest/v1/page_analytics`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPA_KEY,
+          Authorization: `Bearer ${SUPA_KEY}`,
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          event_id: eventId,
+          session_id: id,
+          device_type: getDevice(),
+          time_spent_seconds: Math.max(0, Math.round((Date.now() - startTime.current) / 1000)),
+          map_clicks: mapClicksRef.current,
+          sections_viewed: Array.from(sectionsViewed.current),
+        }),
+        keepalive: true,
+      })
+    }
+
+    // Track which sections the user scrolls past
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting && e.target.id) sectionsViewed.current.add(e.target.id) }),
+      { threshold: 0.3 }
+    )
+    TRACKED_SECTIONS.forEach(sid => {
+      const el = document.getElementById(sid)
+      if (el) observer.observe(el)
+    })
+
+    const onVisibility = () => { if (document.visibilityState === 'hidden') send() }
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('beforeunload', send)
+
+    return () => {
+      observer.disconnect()
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('beforeunload', send)
+      send()
+    }
+  }, [eventId])
+
+  return { trackMapClick }
 }
 
 // Confetti component
@@ -486,6 +589,398 @@ function TriviaGame() {
   )
 }
 
+// Analytics preview data — simulated metrics for Pack WOW sales demo
+const ANALYTICS_SECTIONS_DATA = [
+  { label: "Hero / Portada",     pct: 100 },
+  { label: "Agenda del evento",  pct: 84  },
+  { label: "Mapa interactivo",   pct: 68  },
+  { label: "Trivia corporativa", pct: 51  },
+  { label: "Formulario RSVP",    pct: 38  },
+]
+
+const ANALYTICS_TIMELINE = [
+  { day: "Lun", visits: 42  },
+  { day: "Mar", visits: 78  },
+  { day: "Mié", visits: 95  },
+  { day: "Jue", visits: 134 },
+  { day: "Vie", visits: 187 },
+  { day: "Sáb", visits: 201 },
+  { day: "Dom", visits: 110 },
+]
+
+const ANALYTICS_DEVICES = [
+  { label: "Móvil",      pct: 71, color: "#7C3AED" },
+  { label: "Escritorio", pct: 22, color: "#2EFFA9"  },
+  { label: "Tablet",     pct: 7,  color: "#A78BFA"  },
+]
+
+// Format seconds into "Xm Ys" for time KPI card
+function formatSeconds(s: number): string {
+  return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`
+}
+
+// Analytics preview component — shown after RSVP to demonstrate Pack WOW value to marketing teams
+function AnalyticsPreview() {
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, margin: "-80px" })
+  const [barsVisible, setBarsVisible] = useState(false)
+
+  useEffect(() => {
+    if (isInView) setBarsVisible(true)
+  }, [isInView])
+
+  const opens      = useAnimatedCounter(847, 2000, isInView)
+  const timeInApp  = useAnimatedCounter(384, 2400, isInView)
+  const conversion = useAnimatedCounter(73,  1800, isInView)
+  const mapClicks  = useAnimatedCounter(312, 2200, isInView)
+
+  const chartConfig = { visits: { label: "Visitas", color: "#7C3AED" } }
+
+  const kpiCards = [
+    { icon: Eye,    display: String(opens),            label: "Aperturas totales"    },
+    { icon: Clock,  display: formatSeconds(timeInApp), label: "Tiempo medio en app"  },
+    { icon: Target, display: `${conversion}%`,         label: "Tasa conversión RSVP" },
+    { icon: MapPin, display: String(mapClicks),        label: "Clics en mapa"        },
+  ]
+
+  return (
+    <div ref={sectionRef}>
+      {/* Section header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-10"
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4"
+        >
+          <BarChart2 className="w-4 h-4" />
+          Vista previa del panel — Incluido en Pack WOW
+        </motion.div>
+        <h2 className="text-2xl md:text-4xl font-bold mb-4">
+          Analytics <span className="text-primary">en tiempo real</span>
+        </h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Cada invitación Momento Wow incluye un panel privado donde tu equipo de marketing
+          ve exactamente cómo interactúan los invitados con cada sección.
+        </p>
+      </motion.div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {kpiCards.map((kpi, i) => {
+          const Icon = kpi.icon
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <Card className="p-5 rounded-3xl border border-primary/10 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">↑ en vivo</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">
+                  {kpi.display}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">{kpi.label}</div>
+              </Card>
+            </motion.div>
+          )
+        })}
+      </div>
+
+      {/* Engagement + Timeline */}
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        {/* Section engagement bars */}
+        <Card className="p-6 rounded-3xl border border-primary/10 bg-white shadow-sm">
+          <h3 className="font-semibold text-base mb-5 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            Engagement por sección
+          </h3>
+          <div className="space-y-4">
+            {ANALYTICS_SECTIONS_DATA.map((item, i) => (
+              <div key={item.label}>
+                <div className="flex justify-between text-sm mb-1.5">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <span className="font-semibold text-foreground">{item.pct}%</span>
+                </div>
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+                    initial={{ width: "0%" }}
+                    animate={{ width: barsVisible ? `${item.pct}%` : "0%" }}
+                    transition={{ duration: 1.2, delay: i * 0.15, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* 7-day activity chart */}
+        <Card className="p-6 rounded-3xl border border-primary/10 bg-white shadow-sm">
+          <h3 className="font-semibold text-base mb-5 flex items-center gap-2">
+            <BarChart2 className="w-4 h-4 text-primary" />
+            Actividad últimos 7 días
+          </h3>
+          <ChartContainer config={chartConfig} className="h-40 w-full">
+            <AreaChart data={ANALYTICS_TIMELINE} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+              <defs>
+                <linearGradient id="analyticsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#7C3AED" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0}   />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+              <YAxis hide />
+              <Tooltip
+                contentStyle={{ borderRadius: "12px", fontSize: "12px", border: "1px solid #e5e7eb" }}
+                formatter={(value: number) => [`${value} visitas`, ""]}
+              />
+              <Area
+                type="monotone"
+                dataKey="visits"
+                stroke="#7C3AED"
+                strokeWidth={2}
+                fill="url(#analyticsGradient)"
+                dot={false}
+                activeDot={{ r: 4, fill: "#7C3AED" }}
+              />
+            </AreaChart>
+          </ChartContainer>
+        </Card>
+      </div>
+
+      {/* Devices breakdown */}
+      <Card className="p-6 rounded-3xl border border-primary/10 bg-white shadow-sm mb-8">
+        <h3 className="font-semibold text-base mb-5 flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary" />
+          Dispositivos
+        </h3>
+        <div className="space-y-3">
+          {ANALYTICS_DEVICES.map((device, i) => (
+            <div key={device.label} className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: device.color }} />
+              <span className="text-sm text-muted-foreground w-24">{device.label}</span>
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: device.color }}
+                  initial={{ width: "0%" }}
+                  animate={{ width: barsVisible ? `${device.pct}%` : "0%" }}
+                  transition={{ duration: 1, delay: 0.3 + i * 0.1, ease: "easeOut" }}
+                />
+              </div>
+              <span className="text-sm font-semibold w-8 text-right">{device.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* CTA */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+        className="text-center"
+      >
+        <Button size="lg" className="gap-2 px-8" asChild>
+          <Link href="/#contacto">
+            <TrendingUp className="w-5 h-5" />
+            Solicitar demo personalizada
+          </Link>
+        </Button>
+        <p className="text-xs text-muted-foreground mt-3">
+          Sin compromiso — respuesta en menos de 24h
+        </p>
+      </motion.div>
+    </div>
+  )
+}
+
+// Speakers section
+function SpeakersSection() {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6 }}
+      className="py-12 md:py-20"
+    >
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            Nuestros <span className="text-primary">Ponentes</span>
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Líderes del sector que compartirán sus experiencias y visiones
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto">
+          {SPEAKERS.map((s, i) => (
+            <motion.div
+              key={s.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              whileHover={{ y: -4 }}
+            >
+              <Card className="p-5 text-center hover:shadow-lg transition-all duration-300 cursor-default border border-primary/10">
+                <div
+                  className="w-16 h-16 rounded-2xl mx-auto mb-3 flex items-center justify-center text-white font-bold text-xl shadow-lg"
+                  style={{ backgroundColor: s.color }}
+                >
+                  {s.initials}
+                </div>
+                <h3 className="font-bold text-sm leading-snug mb-0.5">{s.name}</h3>
+                <p className="text-xs text-primary font-medium mb-0.5">{s.role}</p>
+                <p className="text-xs text-muted-foreground mb-2">{s.company}</p>
+                <span className="inline-block text-xs bg-primary/8 text-primary px-2 py-0.5 rounded-full leading-relaxed">
+                  {s.topic}
+                </span>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </motion.section>
+  )
+}
+
+// Workshop picker
+function WorkshopPicker() {
+  const [selected, setSelected] = useState<string | null>(null)
+  const [saved,    setSaved]    = useState(false)
+  const [name,     setName]     = useState("")
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem("summit-workshop")
+      if (s) { setSelected(s); setSaved(true) }
+    } catch {}
+  }, [])
+
+  const save = () => {
+    if (!selected || !name.trim()) return
+    localStorage.setItem("summit-workshop", selected)
+    const w = WORKSHOPS.find(w => w.id === selected)
+    // best-effort Supabase insert handled by parent context
+    setSaved(true)
+  }
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6 }}
+      className="py-12 md:py-20 bg-gradient-to-b from-primary/5 to-transparent"
+    >
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-4xl font-bold mb-4">
+            Elige tu <span className="text-primary">Workshop</span>
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Las sesiones son en grupos reducidos. Reserva tu plaza antes de confirmar asistencia.
+          </p>
+        </div>
+
+        <div className="max-w-2xl mx-auto space-y-4">
+          {saved ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-8 space-y-3"
+            >
+              <div className="text-5xl">🎯</div>
+              <h3 className="text-xl font-bold">¡Plaza reservada!</h3>
+              <p className="text-muted-foreground">
+                Workshop: <strong>{WORKSHOPS.find(w => w.id === selected)?.title}</strong>
+              </p>
+              <button
+                onClick={() => { setSaved(false); setSelected(null) }}
+                className="text-sm text-primary underline underline-offset-2"
+              >
+                Cambiar selección
+              </button>
+            </motion.div>
+          ) : (
+            <>
+              {WORKSHOPS.map((w, i) => (
+                <motion.button
+                  key={w.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  onClick={() => setSelected(w.id)}
+                  className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 ${
+                    selected === w.id
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border bg-white hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl">{w.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-foreground">{w.title}</p>
+                      <p className="text-sm text-muted-foreground">{w.speaker}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-bold ${w.left <= 5 ? "text-red-500" : "text-primary"}`}>
+                        {w.left} plazas
+                      </p>
+                      <p className="text-xs text-muted-foreground">de {w.seats}</p>
+                    </div>
+                    {selected === w.id && (
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                    )}
+                  </div>
+                </motion.button>
+              ))}
+
+              {selected && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex gap-3 pt-2"
+                >
+                  <input
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Tu nombre para reservar la plaza"
+                    className="flex-1 px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                  />
+                  <button
+                    onClick={save}
+                    disabled={!name.trim()}
+                    className="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 text-primary-foreground font-bold text-sm transition-all"
+                  >
+                    Reservar
+                  </button>
+                </motion.div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </motion.section>
+  )
+}
+
 // RSVP configuration for the corporate event demo
 const corporativoRSVPConfig: RSVPConfig = {
   eventId: 'demo-summit-empresarial-2026',
@@ -540,7 +1035,7 @@ const corporativoRSVPConfig: RSVPConfig = {
 }
 
 // Interactive Map component
-function InteractiveMap() {
+function InteractiveMap({ onPinClick }: { onPinClick?: () => void }) {
   const [activePin, setActivePin] = useState<string | null>(null)
 
   const pins = [
@@ -581,6 +1076,7 @@ function InteractiveMap() {
               whileHover={{ scale: 1.2 }}
               onHoverStart={() => setActivePin(pin.id)}
               onHoverEnd={() => setActivePin(null)}
+              onClick={() => onPinClick?.()}
             >
               <motion.div
                 className={`
@@ -635,6 +1131,17 @@ export default function EventoCorporativoPage() {
   const timeLeft = useCountdown(EVENT_DATE)
   const heroRef = useRef(null)
   const isHeroInView = useInView(heroRef, { once: true })
+  const { trackMapClick } = usePageAnalytics('demo-summit-empresarial-2026')
+
+  const handleCalendarClick = () => {
+    const title    = encodeURIComponent("Summit Empresarial 2026")
+    const location = encodeURIComponent("Centro de Convenciones Madrid")
+    const details  = encodeURIComponent("El evento empresarial más innovador del año. Networking, conferencias y oportunidades que transformarán tu negocio.")
+    window.open(
+      `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261016T070000Z/20261016T170000Z&location=${location}&details=${details}`,
+      "_blank"
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F0]">
@@ -654,7 +1161,7 @@ export default function EventoCorporativoPage() {
       </header>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="pt-20 pb-12 md:pt-28 md:pb-20 relative overflow-hidden">
+      <section ref={heroRef} id="section-hero" className="pt-20 pb-12 md:pt-28 md:pb-20 relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
@@ -728,7 +1235,7 @@ export default function EventoCorporativoPage() {
                 animate={{ scale: [1, 1.3, 1.3], opacity: [0.4, 0, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <Button size="lg" className="relative gap-2 px-8">
+              <Button size="lg" className="relative gap-2 px-8" onClick={handleCalendarClick}>
                 <CalendarPlus className="w-5 h-5" />
                 Agendar al Calendario
               </Button>
@@ -753,6 +1260,26 @@ export default function EventoCorporativoPage() {
               </div>
             ))}
           </motion.div>
+
+          {/* Sponsor strip */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isHeroInView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.9, duration: 0.6 }}
+            className="mt-12 text-center"
+          >
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Patrocinan</p>
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+              {SPONSORS.map((s) => (
+                <span
+                  key={s}
+                  className="text-sm md:text-base font-bold text-muted-foreground/60 hover:text-muted-foreground transition-colors tracking-wide"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -764,7 +1291,7 @@ export default function EventoCorporativoPage() {
       </section>
 
       {/* Agenda Section */}
-      <section className="py-12 md:py-20">
+      <section id="section-agenda" className="py-12 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -793,8 +1320,11 @@ export default function EventoCorporativoPage() {
         </div>
       </section>
 
+      {/* Speakers Section */}
+      <SpeakersSection />
+
       {/* Trivia Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-b from-transparent to-primary/5">
+      <section id="section-trivia" className="py-12 md:py-20 bg-gradient-to-b from-transparent to-primary/5">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -817,19 +1347,31 @@ export default function EventoCorporativoPage() {
       </section>
 
       {/* Map Section */}
-      <section className="py-12 md:py-20">
+      <section id="section-mapa" className="py-12 md:py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <InteractiveMap />
+            <InteractiveMap onPinClick={trackMapClick} />
           </div>
         </div>
       </section>
 
+      {/* Workshop Picker */}
+      <WorkshopPicker />
+
       {/* RSVP Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-b from-primary/5 to-transparent">
+      <section id="section-rsvp" className="py-12 md:py-20 bg-gradient-to-b from-primary/5 to-transparent">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <RSVPForm config={corporativoRSVPConfig} />
+          </div>
+        </div>
+      </section>
+
+      {/* Analytics Preview Section — Pack WOW sales tool */}
+      <section className="py-16 md:py-24 bg-gradient-to-b from-primary/5 to-secondary/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <AnalyticsPreview />
           </div>
         </div>
       </section>
