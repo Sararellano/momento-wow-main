@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { RSVPForm } from "@/components/rsvp/rsvp-form";
 import type { RSVPConfig } from "@/lib/rsvp/types";
 import { supabase } from "@/lib/supabase/client";
+import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/config";
 
 const bodaRSVPConfig: RSVPConfig = {
   eventId: 'demo-boda-elena-mateo',
@@ -26,8 +27,8 @@ const bodaRSVPConfig: RSVPConfig = {
   adapter: {
     type: 'both',
     googleScriptUrl: 'https://script.google.com/macros/s/AKfycbwC9KWNugCSqYoftsRvPdkIUKOLirdFupkgcD0MszMVgw7i-sJJkseS1yJ7lLBayf1fnw/exec',
-    supabaseUrl: 'https://clgtmhgrozfdxumptomb.supabase.co',
-    supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsZ3RtaGdyb3pmZHh1bXB0b21iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjAsImV4cCI6MjA4ODgzMDAyMH0.NDkbhcx9kEJRb6YF10n-Nd6mR8qM2LpG95edHg2r8c0',
+    supabaseUrl: supabaseUrl,
+    supabaseAnonKey: supabaseAnonKey,
     supabaseTable: 'rsvps',
   },
   theme: {
