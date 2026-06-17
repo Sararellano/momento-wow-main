@@ -25,8 +25,8 @@ function WhatsAppIcon() {
 const pricingPlans = [
   {
     name: "Esencial",
-    price: "79",
-    originalPrice: "149",
+    price: "30",
+    originalPrice: "59.99",
     description: "Perfecto para eventos íntimos",
     icon: Zap,
     features: [
@@ -44,8 +44,8 @@ const pricingPlans = [
   },
   {
     name: "Experiencia",
-    price: "149",
-    originalPrice: "249",
+    price: "50",
+    originalPrice: "79.99",
     description: "El favorito de nuestros clientes",
     icon: Star,
     features: [
@@ -64,8 +64,8 @@ const pricingPlans = [
   },
   {
     name: "Pack WOW",
-    price: "249",
-    originalPrice: "399",
+    price: "80",
+    originalPrice: "129.99",
     description: "La experiencia definitiva",
     icon: Sparkles,
     features: [
