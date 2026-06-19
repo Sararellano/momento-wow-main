@@ -93,7 +93,7 @@ export function Footer() {
             <h4 className="font-bold mb-4 text-background">Contacto</h4>
             <ul className="space-y-3">
               <li className="text-background/70"><a href="mailto:sararellano@gmail.com" className="text-primary underline">sararellano@gmail.com</a></li>
-              <li className="text-background/70">Madrid, España</li>
+              <li className="text-background/70">Sevilla, España</li>
               <li>
                 <a
                   href="#contacto"
