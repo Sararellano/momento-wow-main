@@ -1,556 +1,606 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
-import { Heart, MapPin, Clock, Calendar, Music, ChevronDown, Send } from "lucide-react";
-import { motion } from "framer-motion";
-import { RSVPForm } from "@/components/rsvp/rsvp-form";
-import type { RSVPConfig } from "@/lib/rsvp/types";
-import { supabase } from "@/lib/supabase/client";
-import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/config";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+} from "framer-motion";
+import {
+  Heart,
+  Volume2,
+  VolumeX,
+  MapPin,
+  Calendar,
+  Clock,
+  Music,
+  Sparkles,
+  ChevronDown,
+  Home,
+  Gamepad2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { MemoryGame, TriviaQuiz, Confetti } from "@/components/boda-games";
+import { StepRsvp } from "@/components/boda-rsvp";
 
-const bodaRSVPConfig: RSVPConfig = {
-  eventId: 'demo-boda-elena-mateo',
-  eventName: 'Boda de Elena & Mateo',
-  fields: [
-    { name: 'name', type: 'text', label: 'Tu nombre completo', placeholder: 'María García López', required: true },
-    { name: 'guests', type: 'select', label: 'Número de asistentes', required: true, options: [
-      { value: '1', label: 'Solo yo' },
-      { value: '2', label: 'Yo + 1 asistente' },
-      { value: '3', label: 'Yo + 2 asistentes' },
-      { value: '4', label: 'Yo + 3 asistentes' },
-    ]},
-    { name: 'attendance', type: 'radio', label: '¿Podrás asistir?', required: true, options: [
-      { value: 'yes', label: '¡Sí, asistiré!' },
-      { value: 'no', label: 'No podré asistir' },
-    ]},
-  ],
-  adapter: {
-    type: 'both',
-    googleScriptUrl: 'https://script.google.com/macros/s/AKfycbwC9KWNugCSqYoftsRvPdkIUKOLirdFupkgcD0MszMVgw7i-sJJkseS1yJ7lLBayf1fnw/exec',
-    supabaseUrl: supabaseUrl,
-    supabaseAnonKey: supabaseAnonKey,
-    supabaseTable: 'rsvps',
-  },
-  theme: {
-    primaryColor: 'primary',
-    accentColor: 'mint',
-    buttonClass: 'bg-primary hover:bg-primary/90 text-primary-foreground',
-    radioActiveClass: 'border-primary bg-primary text-primary-foreground',
-    radioInactiveClass: 'border-border bg-background text-foreground hover:border-primary/50',
-    successIconClass: 'bg-mint',
-  },
-  labels: {
-    title: 'Confirma tu Asistencia',
-    subtitle: 'Nos encantaría contar contigo en nuestro día especial',
-    submitButton: 'Enviar confirmación',
-    successTitle: '¡Gracias por confirmar!',
-    successMessage: 'Nos vemos el 15 de Junio. ¡No podemos esperar para celebrar juntos!',
-    declineTitle: 'Gracias por avisarnos',
-    declineMessage: 'Lamentamos que no puedas acompañarnos. ¡Te echaremos de menos!',
-  },
-};
+const WEDDING_DATE = new Date("2026-09-12T18:00:00");
 
-// ── Wishes ──────────────────────────────────────────────────────────────────
-interface Wish { id: string; name: string; message: string; emoji: string }
+const COUPLE = { bride: "Elena", groom: "Mateo" };
 
-const MOCK_WISHES: Wish[] = [
-  { id: 'm1', name: 'Abuela Carmen',  message: '¡Qué felicidad tan grande! Os deseo todo el amor del mundo. Cuídense mucho, mis niños. 💕',         emoji: '🌹' },
-  { id: 'm2', name: 'Carlos & Lucía', message: 'Por una vida llena de risas, aventuras y café compartido. ¡Sois la pareja más bonita que conozco!',   emoji: '💍' },
-  { id: 'm3', name: 'Papá de Elena',  message: 'Mi niña, hoy eres más feliz que nunca. Mateo, cuídala como se merece. ¡Os quiero enormemente! 🥂',   emoji: '🥂' },
-  { id: 'm4', name: 'Tía Rosa',       message: '¡Que la vida os regale tantos años juntos como risas habéis compartido! Felicidades a los dos. ✨',    emoji: '✨' },
+const STORY = [
+  {
+    year: "2019",
+    title: "El primer café",
+    text: "Una cita a ciegas que ninguno de los dos quería. Tres horas después, seguíamos hablando.",
+    image: "/boda/story-coffee.png",
+    tint: "rgba(98, 0, 238, 0.10)",
+  },
+  {
+    year: "2021",
+    title: "Bajo la lluvia",
+    text: "Nos pilló la tormenta sin paraguas. Fue el día que supimos que era para siempre.",
+    image: "/boda/story-rain.png",
+    tint: "rgba(46, 255, 169, 0.12)",
+  },
+  {
+    year: "2025",
+    title: "La pregunta",
+    text: "Al atardecer, frente al mar. Un sí entre lágrimas que cambió todo.",
+    image: "/boda/story-proposal.png",
+    tint: "rgba(98, 0, 238, 0.14)",
+  },
 ];
 
-const WISH_EMOJIS = ['🌹', '💍', '💕', '🥂', '✨', '🎊', '💐', '🕊️'];
-const WISH_COLORS = ['from-rose-50 to-pink-50 border-rose-200', 'from-purple-50 to-lilac-50 border-purple-200', 'from-emerald-50 to-teal-50 border-emerald-200', 'from-amber-50 to-yellow-50 border-amber-200'];
-
-// ── Petals ───────────────────────────────────────────────────────────────────
-const PETAL_COLORS = ['#fda4af', '#fb7185', '#f9a8d4', '#e879f9', '#fbbf24'];
-
-export default function BodaDemo() {
-  const [isVisible, setIsVisible]   = useState(false);
-  const [isPlaying, setIsPlaying]   = useState(false);
-  const audioRef                     = useRef<HTMLAudioElement>(null);
-
-  // Countdown
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  // Wishes
-  const [wishes,        setWishes]        = useState<Wish[]>(MOCK_WISHES);
-  const [wishName,      setWishName]      = useState('');
-  const [wishMsg,       setWishMsg]       = useState('');
-  const [wishEmoji,     setWishEmoji]     = useState('💕');
-  const [wishSending,   setWishSending]   = useState(false);
-  const [wishSent,      setWishSent]      = useState(false);
-
-  // Petals — generated once, stable reference
-  const petals = useMemo(() => Array.from({ length: 18 }, (_, i) => ({
-    id:       i,
-    left:     Math.random() * 100,
-    delay:    Math.random() * 12,
-    duration: 9 + Math.random() * 9,
-    size:     10 + Math.random() * 14,
-    color:    PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)],
-    sway:     (Math.random() > 0.5 ? 1 : -1) * (20 + Math.random() * 40),
-    rot:      Math.random() * 360,
-  })), []);
-
+function useCountdown(target: Date) {
+  const [time, setTime] = useState({ d: 0, h: 0, m: 0, s: 0 });
   useEffect(() => {
-    setIsVisible(true);
-
-    // Load extra wishes from localStorage
-    try {
-      const stored = localStorage.getItem('boda-wishes');
-      if (stored) {
-        const extra: Wish[] = JSON.parse(stored);
-        setWishes(prev => [...prev, ...extra]);
-      }
-    } catch {}
-
-    // Countdown ticker
-    const WEDDING = new Date('2026-06-15T17:00:00+02:00').getTime();
     const tick = () => {
-      const diff = WEDDING - Date.now();
-      if (diff <= 0) return;
-      setCountdown({
-        days:    Math.floor(diff / 86_400_000),
-        hours:   Math.floor((diff / 3_600_000) % 24),
-        minutes: Math.floor((diff / 60_000) % 60),
-        seconds: Math.floor((diff / 1_000) % 60),
+      const diff = target.getTime() - Date.now();
+      if (diff <= 0) {
+        setTime({ d: 0, h: 0, m: 0, s: 0 });
+        return;
+      }
+      setTime({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff / 3600000) % 24),
+        m: Math.floor((diff / 60000) % 60),
+        s: Math.floor((diff / 1000) % 60),
       });
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [target]);
+  return time;
+}
 
-  const toggleMusic = () => {
-    if (!audioRef.current) return;
-    isPlaying ? audioRef.current.pause() : audioRef.current.play();
-    setIsPlaying(p => !p);
+/* ---------- Envelope unlock screen ---------- */
+function EnvelopeScreen({ onOpen }: { onOpen: () => void }) {
+  const [opening, setOpening] = useState(false);
+
+  const handleOpen = () => {
+    if (opening) return;
+    setOpening(true);
+    setTimeout(onOpen, 1400);
   };
-
-  const submitWish = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!wishName.trim() || !wishMsg.trim()) return;
-    setWishSending(true);
-
-    const newWish: Wish = {
-      id:      `u-${Date.now()}`,
-      name:    wishName.trim(),
-      message: wishMsg.trim(),
-      emoji:   wishEmoji,
-    };
-
-    // Persist locally
-    try {
-      const stored: Wish[] = JSON.parse(localStorage.getItem('boda-wishes') ?? '[]');
-      stored.push(newWish);
-      localStorage.setItem('boda-wishes', JSON.stringify(stored));
-    } catch {}
-
-    // Best-effort Supabase insert
-    supabase.from('rsvps').insert({
-      event_id: 'demo-boda-deseos',
-      data: { name: newWish.name, message: newWish.message, emoji: newWish.emoji },
-    }).then(() => {}).catch(() => {});
-
-    setWishes(prev => [...prev, newWish]);
-    setWishName('');
-    setWishMsg('');
-    setWishEmoji('💕');
-    setWishSending(false);
-    setWishSent(true);
-    setTimeout(() => setWishSent(false), 3000);
-  };
-
-  const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <main className="relative bg-background overflow-x-hidden">
-      <audio ref={audioRef} loop>
-        <source src="/demo/audio/romantic-piano.mp3" type="audio/mpeg" />
-      </audio>
+    <motion.div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6"
+      style={{ backgroundColor: "#F5F5F0" }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      {/* floating hearts */}
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-primary/20"
+          style={{ left: `${10 + i * 11}%`, top: `${15 + (i % 4) * 20}%` }}
+          animate={{ y: [0, -16, 0], opacity: [0.3, 0.7, 0.3] }}
+          transition={{
+            duration: 3 + (i % 3),
+            repeat: Number.POSITIVE_INFINITY,
+            delay: i * 0.3,
+          }}
+        >
+          <Heart className="w-5 h-5 fill-current" />
+        </motion.div>
+      ))}
 
-      {/* ── Falling petals (fixed, full screen) ── */}
-      <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden" aria-hidden="true">
-        {petals.map(p => (
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-8"
+      >
+        Estás invitado
+      </motion.p>
+
+      {/* Envelope */}
+      <div className="relative w-72 h-52 md:w-80 md:h-56" aria-hidden>
+        {/* body */}
+        <div className="absolute inset-0 rounded-3xl bg-card shadow-2xl border border-primary/10" />
+
+        {/* flap */}
+        <motion.div
+          className="absolute left-0 right-0 top-0 origin-top"
+          style={{ transformStyle: "preserve-3d" }}
+          animate={opening ? { rotateX: -180 } : { rotateX: 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        >
           <div
-            key={p.id}
-            className="petal absolute"
+            className="mx-auto h-0 w-0"
             style={{
-              left: `${p.left}%`,
-              width:  `${p.size}px`,
-              height: `${p.size * 1.5}px`,
-              background: `linear-gradient(135deg, ${p.color}cc, ${p.color}88)`,
-              borderRadius: '0 100% 0 100%',
-              transform: `rotate(${p.rot}deg)`,
-              animationDuration: `${p.duration}s`,
-              animationDelay:    `${p.delay}s`,
-              '--sway': `${p.sway}px`,
-            } as React.CSSProperties}
+              borderLeft: "144px solid transparent",
+              borderRight: "144px solid transparent",
+              borderTop: "104px solid var(--primary)",
+              opacity: 0.92,
+            }}
           />
-        ))}
+        </motion.div>
+
+        {/* letter sliding up */}
+        <motion.div
+          className="absolute inset-x-6 top-10 bottom-6 rounded-2xl bg-white shadow-lg flex flex-col items-center justify-center"
+          animate={
+            opening
+              ? { y: -120, opacity: 0, scale: 0.95 }
+              : { y: 0, opacity: 1 }
+          }
+          transition={{ duration: 0.7, delay: opening ? 0.5 : 0 }}
+        >
+          <span className="font-serif text-3xl text-primary">
+            {COUPLE.bride} & {COUPLE.groom}
+          </span>
+          <span className="text-xs tracking-widest uppercase text-muted-foreground mt-2">
+            Nuestra boda
+          </span>
+        </motion.div>
+
+        {/* wax seal */}
+        <motion.button
+          onClick={handleOpen}
+          aria-label="Abrir invitación"
+          className="absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full shadow-xl"
+          style={{ backgroundColor: "#6200EE" }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+          animate={
+            opening
+              ? { scale: 0, opacity: 0 }
+              : { scale: [1, 1.06, 1] }
+          }
+          transition={
+            opening
+              ? { duration: 0.3 }
+              : { duration: 2, repeat: Number.POSITIVE_INFINITY }
+          }
+        >
+          <Heart className="w-8 h-8 text-white fill-white" />
+        </motion.button>
       </div>
 
-      {/* Music button */}
-      <button
-        onClick={toggleMusic}
-        className="fixed top-6 right-6 z-50 w-14 h-14 rounded-full bg-primary/90 backdrop-blur-sm hover:bg-primary flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110"
-        aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
+      <motion.div
+        animate={{ y: [0, 6, 0] }}
+        transition={{ duration: 1.6, repeat: Number.POSITIVE_INFINITY }}
+        className="mt-10 flex flex-col items-center gap-2"
       >
-        <Music className={`w-6 h-6 text-primary-foreground ${isPlaying ? 'animate-pulse' : ''}`} />
-      </button>
+        <button
+          onClick={handleOpen}
+          className="text-primary font-semibold tracking-wide"
+        >
+          Toca el sello para abrir
+        </button>
+        <ChevronDown className="w-5 h-5 text-primary/60" />
+      </motion.div>
+    </motion.div>
+  );
+}
 
-      {/* ── Hero ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-4">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className={`absolute -top-40 -right-40 w-96 h-96 bg-lilac-light rounded-full blur-3xl transition-all duration-1000 ${isVisible ? 'opacity-30' : 'opacity-0'}`} />
-          <div className={`absolute -bottom-40 -left-40 w-96 h-96 bg-mint-light rounded-full blur-3xl transition-all duration-1000 delay-300 ${isVisible ? 'opacity-40' : 'opacity-0'}`} />
-        </div>
-
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <div className={`space-y-10 transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-
-            {/* Animated rings SVG */}
-            <div className="flex justify-center">
-              <svg width="88" height="52" viewBox="0 0 88 52" className="drop-shadow-md">
-                <circle cx="30" cy="26" r="20" fill="none" stroke="#c084fc" strokeWidth="5" className="ring-left" />
-                <circle cx="58" cy="26" r="20" fill="none" stroke="#a8a29e" strokeWidth="5" className="ring-right" />
-                <circle cx="44" cy="26" r="6" fill="#c084fc" opacity="0.6" />
-              </svg>
-            </div>
-
-            {/* Names */}
-            <div className="space-y-3">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-primary">
-                Elena & Mateo
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground font-light tracking-widest uppercase text-sm">
-                se casan el
-              </p>
-              <p className="text-2xl md:text-3xl font-semibold text-foreground">
-                15 de Junio, 2026 · Sevilla
-              </p>
-            </div>
-
-            {/* ── Countdown ── */}
-            <div className="grid grid-cols-4 gap-3 md:gap-5 max-w-sm md:max-w-md mx-auto">
-              {[
-                { v: countdown.days,    l: 'Días' },
-                { v: countdown.hours,   l: 'Horas' },
-                { v: countdown.minutes, l: 'Min' },
-                { v: countdown.seconds, l: 'Seg' },
-              ].map(({ v, l }) => (
-                <div key={l} className="flex flex-col items-center gap-1 p-3 md:p-4 rounded-2xl bg-white/60 backdrop-blur-sm border border-primary/20 shadow-sm">
-                  <span className="text-3xl md:text-4xl font-black text-primary tabular-nums leading-none">
-                    {pad(v)}
-                  </span>
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {l}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-4 animate-bounce">
-              <ChevronDown className="w-8 h-8 mx-auto text-muted-foreground" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Story ── */}
-      <section className="py-24 px-4 bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto max-w-3xl">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Nuestra <span className="font-serif text-primary">Historia</span>
-            </h2>
-            <p className="text-muted-foreground text-lg">Un viaje de amor que comenzó hace 5 años</p>
-          </motion.div>
-
-          <div className="space-y-16">
-            {[
-              {
-                year: '2021 · El Primer Encuentro',
-                title: 'Una tarde de café ☕',
-                text: 'Nuestros caminos se cruzaron en una pequeña cafetería de Madrid. Elena pidió un capuchino, Mateo un café solo. Ambos llevaban el mismo libro. La conversación fluyó como si nos conociéramos de toda la vida.',
-                bg: 'from-rose-100 to-pink-50',
-                icon: '☕',
-                flip: false,
-              },
-              {
-                year: '2022 · Nuestro Primer Viaje',
-                title: 'Lisboa bajo la lluvia 🌧️',
-                text: 'Escapada de fin de semana que se convirtió en una aventura inolvidable. Bailamos bajo la lluvia en el Mirador de Santa Lucía. Fue ahí donde Mateo supo que Elena era "la indicada".',
-                bg: 'from-emerald-100 to-teal-50',
-                icon: '🌧️',
-                flip: true,
-              },
-              {
-                year: '2025 · La Propuesta',
-                title: '¿Quieres casarte conmigo? 💍',
-                text: 'En la misma cafetería donde todo comenzó, con las mismas tazas y el mismo libro. Mateo se arrodilló. Elena dijo "sí" antes de que pudiera terminar la pregunta. Los aplausos de los desconocidos aún resuenan en nuestra memoria.',
-                bg: 'from-purple-100 to-lilac-50',
-                icon: '💍',
-                flip: false,
-              },
-            ].map(({ year, title, text, bg, icon, flip }, i) => (
-              <div key={year} className={`flex flex-col ${flip ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 items-center`}>
-                <motion.div
-                  className="md:w-1/2 space-y-4"
-                  initial={{ opacity: 0, x: flip ? 60 : -60 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.35 }}
-                  transition={{ duration: 0.65, ease: "easeOut", delay: 0.1 }}
-                >
-                  <div className="inline-block px-4 py-2 bg-lilac-light rounded-full text-primary font-semibold text-sm">
-                    {year}
-                  </div>
-                  <h3 className="text-2xl font-bold text-foreground">{title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{text}</p>
-                </motion.div>
-                <motion.div
-                  className="md:w-1/2"
-                  initial={{ opacity: 0, x: flip ? -60 : 60, scale: 0.92 }}
-                  whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                  viewport={{ once: true, amount: 0.35 }}
-                  transition={{ duration: 0.65, ease: "easeOut", delay: 0.22 }}
-                >
-                  <div className={`aspect-square rounded-3xl bg-gradient-to-br ${bg} flex items-center justify-center shadow-inner`}>
-                    <span className="text-7xl drop-shadow-sm">{icon}</span>
-                  </div>
-                </motion.div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Event details ── */}
-      <section className="py-24 px-4 bg-background">
-        <div className="container mx-auto max-w-5xl">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Detalles del <span className="font-serif text-primary">Evento</span>
-            </h2>
-            <p className="text-muted-foreground text-lg">Todo lo que necesitas saber para celebrar con nosotros</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <motion.div
-              className="p-8 rounded-3xl bg-gradient-to-br from-lilac-light/50 to-background border-2 border-border space-y-6"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.55, ease: "easeOut" }}
+/* ---------- Countdown ---------- */
+function Countdown() {
+  const t = useCountdown(WEDDING_DATE);
+  const units = [
+    { v: t.d, l: "Días" },
+    { v: t.h, l: "Horas" },
+    { v: t.m, l: "Min" },
+    { v: t.s, l: "Seg" },
+  ];
+  return (
+    <div className="flex justify-center gap-3 md:gap-5">
+      {units.map((u) => (
+        <div
+          key={u.l}
+          className="flex flex-col items-center rounded-3xl bg-card/80 backdrop-blur px-3 py-4 md:px-6 md:py-5 shadow-lg border border-primary/10 min-w-[68px] md:min-w-[88px]"
+        >
+          <AnimatePresence mode="popLayout">
+            <motion.span
+              key={u.v}
+              initial={{ y: -16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-2xl md:text-4xl font-bold text-primary tabular-nums"
             >
-              <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center">
-                <Heart className="w-8 h-8 text-primary-foreground" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">Ceremonia</h3>
-                <p className="text-muted-foreground">Capilla de San Juan, Sevilla</p>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-foreground"><Clock   className="w-5 h-5 text-primary" /><span>17:00h</span></div>
-                <div className="flex items-center gap-3 text-foreground"><MapPin  className="w-5 h-5 text-primary" /><span>Calle Real de la Alhambra, 23</span></div>
-                <div className="flex items-center gap-3 text-foreground"><Calendar className="w-5 h-5 text-primary" /><span>15 de Junio, 2026</span></div>
-              </div>
-            </motion.div>
+              {String(u.v).padStart(2, "0")}
+            </motion.span>
+          </AnimatePresence>
+          <span className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground mt-1">
+            {u.l}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-            <motion.div
-              className="p-8 rounded-3xl bg-gradient-to-br from-mint-light/50 to-background border-2 border-border space-y-6"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.55, ease: "easeOut", delay: 0.15 }}
-            >
-              <div className="w-16 h-16 rounded-2xl bg-mint flex items-center justify-center">
-                <Heart className="w-8 h-8 text-mint-foreground" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">Celebración</h3>
-                <p className="text-muted-foreground">Cortijo Los Olivos</p>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-foreground"><Clock   className="w-5 h-5 text-mint" /><span>19:30h – 02:00h</span></div>
-                <div className="flex items-center gap-3 text-foreground"><MapPin  className="w-5 h-5 text-mint" /><span>Carretera de Carmona, km 7</span></div>
-                <div className="flex items-center gap-3 text-foreground"><Calendar className="w-5 h-5 text-mint" /><span>15 de Junio, 2026</span></div>
-              </div>
-            </motion.div>
-          </div>
+/* ---------- Story item (scrollytelling) ---------- */
+function StoryItem({
+  item,
+  index,
+  onInView,
+}: {
+  item: (typeof STORY)[number];
+  index: number;
+  onInView: (tint: string) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
+  const imgScale = useTransform(scrollYProgress, [0, 0.5, 1], [1.15, 1, 1.15]);
+  const reversed = index % 2 === 1;
 
-          {/* Dress code — visual palette */}
-          <div className="mt-12 p-8 rounded-3xl bg-muted/40 text-center space-y-5">
-            <h3 className="text-xl font-semibold text-foreground">Código de vestimenta</h3>
-            <p className="text-muted-foreground">Elegante · Colores claros · Disfruta del sol de Sevilla</p>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              {[
-                { color: '#fdf6e3', label: 'Crema'      },
-                { color: '#f3e5d8', label: 'Nude'       },
-                { color: '#d4e8d8', label: 'Sage'       },
-                { color: '#dce8f5', label: 'Celeste'    },
-                { color: '#ead5e8', label: 'Lavanda'    },
-              ].map(({ color, label }) => (
-                <div key={label} className="flex flex-col items-center gap-1">
-                  <div className="w-10 h-10 rounded-full border-2 border-white shadow-md" style={{ backgroundColor: color }} />
-                  <span className="text-xs text-muted-foreground">{label}</span>
-                </div>
-              ))}
-              <div className="flex flex-col items-center gap-1 opacity-40">
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-md bg-white relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center text-lg">🚫</div>
-                </div>
-                <span className="text-xs text-muted-foreground">Blanco novia</span>
-              </div>
+  useEffect(() => {
+    const unsub = scrollYProgress.on("change", (v) => {
+      if (v > 0.35 && v < 0.7) onInView(item.tint);
+    });
+    return () => unsub();
+  }, [scrollYProgress, item.tint, onInView]);
+
+  return (
+    <div ref={ref} className="py-10 md:py-16">
+      <div
+        className={`flex flex-col ${
+          reversed ? "md:flex-row-reverse" : "md:flex-row"
+        } items-center gap-6 md:gap-12`}
+      >
+        <motion.div
+          initial={{ opacity: 0, x: reversed ? 40 : -40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.7 }}
+          className="relative w-full md:w-1/2"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-xl">
+            <motion.div style={{ scale: imgScale }} className="absolute inset-0">
+              <Image
+                src={item.image || "/placeholder.svg"}
+                alt={item.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </motion.div>
+            <div className="absolute top-4 left-4 rounded-full bg-card/90 backdrop-blur px-4 py-1.5 text-sm font-bold text-primary shadow">
+              {item.year}
             </div>
           </div>
-        </div>
-      </section>
+        </motion.div>
 
-      {/* ── Libro de deseos ── */}
-      <section className="py-24 px-4 bg-gradient-to-b from-muted/20 to-background">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Libro de <span className="font-serif text-primary">Deseos</span>
-            </h2>
-            <p className="text-muted-foreground text-lg">Déjales un mensaje que recordarán para siempre</p>
+        <motion.div
+          style={{ y }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="w-full md:w-1/2 text-center md:text-left"
+        >
+          <Sparkles className="w-6 h-6 text-secondary mx-auto md:mx-0 mb-3" />
+          <h3 className="font-serif text-3xl md:text-4xl text-primary mb-3">
+            {item.title}
+          </h3>
+          <p className="text-muted-foreground text-lg leading-relaxed text-pretty">
+            {item.text}
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Page ---------- */
+export default function BodaPage() {
+  const [unlocked, setUnlocked] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [bgTint, setBgTint] = useState("transparent");
+  const [confettiFire, setConfettiFire] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleOpen = () => {
+    setUnlocked(true);
+    // The opening click is a valid user gesture -> start audio
+    if (audioRef.current) {
+      audioRef.current.volume = 0.4;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !audioRef.current.muted;
+    setMuted(audioRef.current.muted);
+  };
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: "#F5F5F0" }}>
+      {/* Background music (royalty-free tone) */}
+      <audio ref={audioRef} loop preload="auto">
+        <source
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ambient-piano-loop.mp3"
+          type="audio/mpeg"
+        />
+      </audio>
+
+      <AnimatePresence>
+        {!unlocked && <EnvelopeScreen onOpen={handleOpen} />}
+      </AnimatePresence>
+
+      {/* dynamic scroll tint */}
+      <motion.div
+        className="pointer-events-none fixed inset-0 z-0 transition-colors duration-700"
+        animate={{ backgroundColor: bgTint }}
+      />
+
+      {unlocked && (
+        <motion.main
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="relative z-10"
+        >
+          {/* confetti layer for correct trivia answers */}
+          <Confetti fire={confettiFire} />
+
+          {/* sound + home controls */}
+          <div className="fixed top-4 right-4 z-40 flex gap-2">
+            <button
+              onClick={toggleMute}
+              aria-label={muted ? "Activar sonido" : "Silenciar"}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-card/90 backdrop-blur shadow-lg border border-primary/10 text-primary"
+            >
+              {muted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
+            </button>
           </div>
+          <Link
+            href="/"
+            aria-label="Volver al inicio"
+            className="fixed top-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-card/90 backdrop-blur shadow-lg border border-primary/10 text-primary"
+          >
+            <Home className="w-5 h-5" />
+          </Link>
 
-          {/* Wishes grid */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-10">
-            {wishes.map((w, i) => (
-              <div
-                key={w.id}
-                className={`p-5 rounded-2xl border bg-gradient-to-br ${WISH_COLORS[i % WISH_COLORS.length]} space-y-2 shadow-sm`}
+          {/* HERO */}
+          <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden px-4">
+            <Image
+              src="/boda/couple-hero.png"
+              alt={`${COUPLE.bride} y ${COUPLE.groom}`}
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-[#F5F5F0]" />
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.9 }}
+              className="relative z-10 text-center text-white"
+            >
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="tracking-[0.3em] uppercase text-sm mb-4 drop-shadow"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{w.emoji}</span>
-                  <span className="font-bold text-foreground">{w.name}</span>
+                Nos casamos
+              </motion.p>
+              <h1 className="font-serif text-6xl md:text-8xl drop-shadow-lg mb-4">
+                {COUPLE.bride}
+                <span className="text-secondary"> & </span>
+                {COUPLE.groom}
+              </h1>
+              <p className="text-lg md:text-xl drop-shadow mb-2">
+                12 de Septiembre, 2026 · Mallorca
+              </p>
+              <motion.div
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY }}
+                className="mt-10"
+              >
+                <ChevronDown className="w-7 h-7 mx-auto" />
+              </motion.div>
+            </motion.div>
+          </section>
+
+          {/* COUNTDOWN */}
+          <section className="relative py-16 px-4">
+            <div className="container mx-auto max-w-3xl text-center">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="font-serif text-3xl md:text-4xl text-primary mb-8"
+              >
+                Cuenta atrás para el gran día
+              </motion.h2>
+              <Countdown />
+            </div>
+          </section>
+
+          {/* STORY - scrollytelling */}
+          <section className="relative py-12 px-4">
+            <div className="container mx-auto max-w-5xl">
+              <div className="text-center mb-6">
+                <p className="tracking-[0.3em] uppercase text-sm text-secondary-foreground/70 mb-2">
+                  Scrollytelling
+                </p>
+                <h2 className="font-serif text-4xl md:text-5xl text-primary">
+                  Nuestra Historia
+                </h2>
+              </div>
+              {STORY.map((item, i) => (
+                <StoryItem
+                  key={item.year}
+                  item={item}
+                  index={i}
+                  onInView={setBgTint}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* VENUE */}
+          <section className="relative py-16 px-4">
+            <div className="container mx-auto max-w-5xl">
+              <div className="relative overflow-hidden rounded-3xl shadow-xl">
+                <div className="relative aspect-[16/9]">
+                  <Image
+                    src="/boda/venue.png"
+                    alt="Finca de la celebración"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 1024px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">{w.message}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Wish form */}
-          <div className="bg-white/80 backdrop-blur-sm border border-primary/20 rounded-3xl p-8 shadow-lg max-w-xl mx-auto">
-            {wishSent ? (
-              <div className="text-center py-6 space-y-3">
-                <div className="text-5xl animate-bounce">💌</div>
-                <h3 className="text-xl font-bold text-foreground">¡Gracias por tu mensaje!</h3>
-                <p className="text-muted-foreground">Elena & Mateo lo leerán con mucho amor.</p>
-              </div>
-            ) : (
-              <form onSubmit={submitWish} className="space-y-5">
-                <h3 className="text-lg font-bold text-foreground text-center">¡Deja tu deseo! 💌</h3>
-
-                <input
-                  type="text"
-                  value={wishName}
-                  onChange={e => setWishName(e.target.value)}
-                  placeholder="Tu nombre"
-                  required
-                  maxLength={50}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                />
-
-                <textarea
-                  value={wishMsg}
-                  onChange={e => setWishMsg(e.target.value)}
-                  placeholder="Escribe tu mensaje para los novios…"
-                  required
-                  maxLength={200}
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
-                />
-
-                {/* Emoji picker */}
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground">Elige un emoji:</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {WISH_EMOJIS.map(e => (
-                      <button
-                        key={e}
-                        type="button"
-                        onClick={() => setWishEmoji(e)}
-                        className={`text-2xl p-2 rounded-xl transition-all ${wishEmoji === e ? 'bg-primary/15 scale-110 ring-2 ring-primary/40' : 'hover:bg-muted'}`}
-                      >
-                        {e}
-                      </button>
-                    ))}
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+                  <h3 className="font-serif text-3xl md:text-4xl mb-4">
+                    Finca Son Olivera
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-secondary" /> 12 Sep 2026
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-secondary" /> 18:00 h
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-secondary" /> Mallorca,
+                      España
+                    </span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
 
-                <button
-                  type="submit"
-                  disabled={wishSending || !wishName.trim() || !wishMsg.trim()}
-                  className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-bold py-3 rounded-xl transition-all"
-                >
-                  <Send className="w-4 h-4" />
-                  {wishSending ? 'Enviando…' : 'Enviar deseo'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      </section>
+          {/* GAMING ZONE */}
+          <section className="relative py-16 px-4">
+            <div className="container mx-auto max-w-3xl">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center mb-10"
+              >
+                <p className="tracking-[0.3em] uppercase text-sm text-secondary-foreground/70 mb-2">
+                  Zona de juego
+                </p>
+                <h2 className="font-serif text-4xl md:text-5xl text-primary text-balance">
+                  ¿Cuánto conoces a los novios?
+                </h2>
+                <p className="text-muted-foreground mt-3">
+                  Pon a prueba tu memoria y tu intuición antes del gran día.
+                </p>
+              </motion.div>
 
-      {/* ── RSVP ── */}
-      <section className="py-24 px-4 bg-gradient-to-b from-muted/30 to-background">
-        <div className="container mx-auto max-w-2xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Confirma tu <span className="font-serif text-primary">Asistencia</span>
-            </h2>
-            <p className="text-muted-foreground text-lg">Nos encantaría contar contigo en nuestro día especial</p>
-          </div>
-          <RSVPForm config={bodaRSVPConfig} />
-        </div>
-      </section>
+              {/* Memory Match */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Card className="rounded-3xl p-5 md:p-8 shadow-xl border-primary/10 mb-8">
+                  <div className="flex items-center gap-2 mb-5">
+                    <Gamepad2 className="w-5 h-5 text-primary" />
+                    <h3 className="font-serif text-2xl text-primary">
+                      Encuentra las parejas
+                    </h3>
+                  </div>
+                  <MemoryGame />
+                </Card>
+              </motion.div>
 
-      {/* ── Footer ── */}
-      <section className="py-12 px-4 border-t border-border">
-        <div className="container mx-auto max-w-4xl text-center">
-          <p className="text-muted-foreground mb-4">Esta es una demo de invitación web creada por</p>
-          <a href="/" className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-semibold text-lg transition-colors">
-            ← Volver a Momento Wow
-          </a>
-        </div>
-      </section>
+              {/* Trivia */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Card className="rounded-3xl p-5 md:p-8 shadow-xl border-primary/10">
+                  <div className="flex items-center gap-2 mb-5">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <h3 className="font-serif text-2xl text-primary">
+                      El trivial de Elena & Mateo
+                    </h3>
+                  </div>
+                  <TriviaQuiz onCorrect={() => setConfettiFire((n) => n + 1)} />
+                </Card>
+              </motion.div>
+            </div>
+          </section>
 
-      <style jsx>{`
-        @keyframes petal-fall {
-          0%   { transform: translateY(-40px) translateX(0px) rotate(0deg);             opacity: 0; }
-          8%   { opacity: 0.75; }
-          92%  { opacity: 0.6; }
-          100% { transform: translateY(105vh) translateX(var(--sway)) rotate(540deg);   opacity: 0; }
-        }
-        .petal {
-          animation: petal-fall linear infinite;
-          will-change: transform;
-        }
-        .ring-left  { animation: ring-spin 6s ease-in-out infinite alternate; transform-origin: center; }
-        .ring-right { animation: ring-spin 6s ease-in-out infinite alternate-reverse; transform-origin: center; }
-        @keyframes ring-spin {
-          0%   { transform: rotate(-4deg) scale(1); }
-          100% { transform: rotate(4deg)  scale(1.04); }
-        }
-      `}</style>
-    </main>
+          {/* RSVP */}
+          <section className="relative py-16 px-4">
+            <div className="container mx-auto max-w-md">
+              <Card className="rounded-3xl p-6 md:p-8 shadow-xl border-primary/10">
+                <div className="text-center mb-6">
+                  <Music className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h2 className="font-serif text-3xl text-primary">
+                    Confirma tu asistencia
+                  </h2>
+                  <p className="text-muted-foreground text-sm mt-2">
+                    Reserva antes del 1 de Agosto
+                  </p>
+                </div>
+                <StepRsvp eventId="demo-boda-elena-mateo" />
+              </Card>
+            </div>
+          </section>
+
+          {/* FOOTER */}
+          <footer className="relative py-12 px-4 text-center">
+            <Heart className="w-8 h-8 text-primary fill-primary/20 mx-auto mb-4" />
+            <p className="font-serif text-2xl text-primary mb-1">
+              {COUPLE.bride} & {COUPLE.groom}
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Con cariño, os esperamos · 12.09.2026
+            </p>
+            <p className="mt-6 text-xs text-muted-foreground">
+              Hecho con cariño por{" "}
+              <Link href="/" className="text-primary font-semibold">
+                Momento Wow
+              </Link>
+            </p>
+          </footer>
+        </motion.main>
+      )}
+    </div>
   );
 }
