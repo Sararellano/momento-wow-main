@@ -195,17 +195,19 @@ export default function BabyShowerDemo() {
     setGuessCount(next)
     try { localStorage.setItem("bs-guess-count", String(next)) } catch {}
 
-    supabase.from("rsvps").insert({
-      event_id: "demo-baby-shower-apuestas",
-      data: { name: guessName, babyName: guessBabyName, date: guessDate, weight: guessWeight, time: guessTime },
-    }).then(() => {}).catch(() => {})
+    try {
+      await supabase.from("rsvps").insert({
+        event_id: "demo-baby-shower-apuestas",
+        data: { name: guessName, babyName: guessBabyName, date: guessDate, weight: guessWeight, time: guessTime },
+      })
+    } catch {}
 
     setGuessSending(false)
     setGuessDone(true)
   }
 
   // Reserve gift
-  const confirmReservation = (giftId: string) => {
+  const confirmReservation = async (giftId: string) => {
     if (!reserverName.trim()) return
     const updated = gifts.map(g =>
       g.id === giftId ? { ...g, reserved: true, reservedBy: reserverName.trim() } : g
@@ -213,10 +215,12 @@ export default function BabyShowerDemo() {
     setGifts(updated)
     try { localStorage.setItem("bs-gifts", JSON.stringify(updated)) } catch {}
 
-    supabase.from("rsvps").insert({
-      event_id: "demo-baby-shower-regalos",
-      data: { giftId, giftName: gifts.find(g => g.id === giftId)?.name, reservedBy: reserverName.trim() },
-    }).then(() => {}).catch(() => {})
+    try {
+      await supabase.from("rsvps").insert({
+        event_id: "demo-baby-shower-regalos",
+        data: { giftId, giftName: gifts.find(g => g.id === giftId)?.name, reservedBy: reserverName.trim() },
+      })
+    } catch {}
 
     setReservingId(null)
     setReserverName("")

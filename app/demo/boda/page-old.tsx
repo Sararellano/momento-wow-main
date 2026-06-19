@@ -149,10 +149,12 @@ export default function BodaDemo() {
     } catch {}
 
     // Best-effort Supabase insert
-    supabase.from('rsvps').insert({
-      event_id: 'demo-boda-deseos',
-      data: { name: newWish.name, message: newWish.message, emoji: newWish.emoji },
-    }).then(() => {}).catch(() => {});
+    try {
+      await supabase.from('rsvps').insert({
+        event_id: 'demo-boda-deseos',
+        data: { name: newWish.name, message: newWish.message, emoji: newWish.emoji },
+      });
+    } catch {}
 
     setWishes(prev => [...prev, newWish]);
     setWishName('');
